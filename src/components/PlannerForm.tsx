@@ -53,7 +53,9 @@ export default function PlannerForm() {
         const parsed = JSON.parse(saved);
         reset(parsed);
       }
-    } catch {}
+    } catch {
+      // Ignore parse errors — corrupt storage is simply discarded
+    }
   }, [reset]);
 
   // Auto-save to localStorage
@@ -61,7 +63,9 @@ export default function PlannerForm() {
     const interval = setInterval(() => {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(getValues()));
-      } catch {}
+      } catch {
+        // Ignore storage quota errors — auto-save is best-effort
+      }
     }, 3000);
     return () => clearInterval(interval);
   }, [getValues]);
@@ -75,7 +79,8 @@ export default function PlannerForm() {
       setTimeout(() => {
         document.getElementById("results-heading")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
-    } catch {
+    } catch (e) {
+      console.error("Journey generation failed:", e);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

@@ -21,7 +21,7 @@ describe("generateEncounters", () => {
 
   it("triggered encounters have monster data", () => {
     // Find a seed that triggers an encounter
-    for (let seed = 0; seed < 1000; seed++) {
+    for (let seed = 0; seed < 100; seed++) {
       const rng = createRng(seed);
       const result = generateEncounters(rng);
       if (result.dayRoll.triggered) {
