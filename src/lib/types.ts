@@ -27,7 +27,7 @@ export type TravelPace = "fast" | "normal" | "slow";
 export type VehicleType = "none" | "land_vehicle" | "waterborne";
 
 export interface StageInput {
-  stageNumber: 1 | 2 | 3;
+  stageNumber: number;
   startLocation: string;
   startTimeOfDay: TimeOfDay;
   endLocation: string;
@@ -60,7 +60,7 @@ export interface CharacterRations {
 }
 
 export interface StageResult {
-  stageNumber: 1 | 2 | 3;
+  stageNumber: number;
   effectiveMilesPerDay: number;
   daysRequired: number;
   humanReadableDuration: string;

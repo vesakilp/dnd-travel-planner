@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { PlannerFormSchema, PlannerFormData } from "@/lib/schema";
@@ -9,8 +9,8 @@ import PartySection from "./PartySection";
 import StageSection from "./StageSection";
 import ResultsPanel from "./ResultsPanel";
 
-const DEFAULT_STAGE = (n: 1 | 2 | 3) => ({
-  stageNumber: n,
+const DEFAULT_STAGE = (stageNumber: number) => ({
+  stageNumber,
   startLocation: "",
   startTimeOfDay: "morning" as const,
   endLocation: "",
@@ -41,8 +41,13 @@ export default function PlannerForm() {
     resolver: zodResolver(PlannerFormSchema),
     defaultValues: {
       characters: [{ id: crypto.randomUUID(), name: "", species: "", characterClass: "", level: 1 }],
-      stages: [DEFAULT_STAGE(1), DEFAULT_STAGE(2), DEFAULT_STAGE(3)],
+      stages: [DEFAULT_STAGE(1)],
     },
+  });
+
+  const { fields: stageFields, append: appendStage, remove: removeStage } = useFieldArray({
+    control,
+    name: "stages",
   });
 
   // Restore from localStorage
@@ -91,20 +96,38 @@ export default function PlannerForm() {
     handleSubmit((data) => onSubmit(data, mode))();
   }
 
+  function addStage() {
+    appendStage(DEFAULT_STAGE(stageFields.length + 1));
+  }
+
   return (
     <div className="space-y-8">
       <form onSubmit={(e) => { e.preventDefault(); handleAction("all"); }} noValidate className="space-y-8">
         <PartySection register={register} control={control} errors={errors} />
 
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-amber-400">🧭 Journey Stages</h2>
-          {[0, 1, 2].map((i) => (
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-xl font-bold text-amber-400">🧭 Journey Stages</h2>
+            <button
+              type="button"
+              onClick={addStage}
+              className="bg-amber-700 hover:bg-amber-600 text-white text-sm px-4 py-2 rounded transition-colors"
+            >
+              + Add Stage
+            </button>
+          </div>
+          {errors.stages?.root && (
+            <p className="text-red-400 text-sm">{errors.stages.root.message}</p>
+          )}
+          {stageFields.map((field, i) => (
             <StageSection
-              key={i}
+              key={field.id}
               stageIndex={i}
               register={register}
               control={control}
               errors={errors}
+              canRemove={stageFields.length > 1}
+              onRemove={() => removeStage(i)}
             />
           ))}
         </div>

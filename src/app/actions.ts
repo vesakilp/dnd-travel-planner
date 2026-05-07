@@ -17,7 +17,9 @@ export async function generateJourney(
 ): Promise<JourneyResult> {
   const rng = createRng(seed ?? Date.now());
 
-  const stages: StageResult[] = data.stages.map((stage) => {
+  const stages: StageResult[] = data.stages.map((stage, index) => {
+    const stageNumber = index + 1;
+    const normalizedStage = { ...stage, stageNumber };
     const terrainMultiplier = getTerrainMultiplier(stage.terrain);
     const { effectiveMilesPerDay, warning } = getEffectiveMilesPerDay(
       stage.pace,
@@ -39,11 +41,11 @@ export async function generateJourney(
     }
 
     if (mode === "narrative" || mode === "all") {
-      narrative = generateNarrative(stage, data.characters, encounter);
+      narrative = generateNarrative(normalizedStage, data.characters, encounter);
     }
 
     return {
-      stageNumber: stage.stageNumber,
+      stageNumber,
       effectiveMilesPerDay,
       daysRequired,
       humanReadableDuration,
