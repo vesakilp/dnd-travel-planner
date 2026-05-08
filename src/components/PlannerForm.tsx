@@ -3,7 +3,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useEffect } from "react";
 import { PlannerFormSchema, PlannerFormData } from "@/lib/schema";
-import { generateJourney, GenerateMode } from "@/app/actions";
+import { generateJourney } from "@/app/actions";
 import { JourneyResult } from "@/lib/types";
 import PartySection from "./PartySection";
 import StageSection from "./StageSection";
@@ -36,6 +36,7 @@ export default function PlannerForm() {
     handleSubmit,
     getValues,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<PlannerFormData>({
     resolver: zodResolver(PlannerFormSchema),
@@ -75,11 +76,11 @@ export default function PlannerForm() {
     return () => clearInterval(interval);
   }, [getValues]);
 
-  async function onSubmit(data: PlannerFormData, mode: GenerateMode) {
+  async function onSubmit(data: PlannerFormData) {
     setLoading(true);
     setError(null);
     try {
-      const res = await generateJourney(data, mode);
+      const res = await generateJourney(data, "all");
       setResult(res);
       setTimeout(() => {
         document.getElementById("results-heading")?.scrollIntoView({ behavior: "smooth" });
@@ -92,17 +93,38 @@ export default function PlannerForm() {
     }
   }
 
-  function handleAction(mode: GenerateMode) {
-    handleSubmit((data) => onSubmit(data, mode))();
-  }
-
   function addStage() {
     appendStage(DEFAULT_STAGE(stageFields.length + 1));
   }
 
+  function handleReturnJourney() {
+    const current = getValues("stages");
+    const reversed = [...current].reverse().map((stage, i) => ({
+      ...stage,
+      stageNumber: i + 1,
+      startLocation: stage.endLocation,
+      endLocation: stage.startLocation,
+    }));
+    reversed.forEach((stage, i) => {
+      setValue(`stages.${i}`, stage);
+    });
+    setResult(null);
+  }
+
+  function handleNewJourney() {
+    const confirmed = window.confirm(
+      "Are you sure you want to start a new journey? The current stages will be wiped."
+    );
+    if (!confirmed) return;
+    const characters = getValues("characters");
+    reset({ characters, stages: [DEFAULT_STAGE(1)] });
+    setResult(null);
+    setError(null);
+  }
+
   return (
     <div className="space-y-8">
-      <form onSubmit={(e) => { e.preventDefault(); handleAction("all"); }} noValidate className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
         <PartySection register={register} control={control} errors={errors} />
 
         <div className="space-y-6">
@@ -134,35 +156,29 @@ export default function PlannerForm() {
 
         <div className="flex flex-wrap gap-3">
           <button
-            type="button"
-            onClick={() => handleAction("calculate")}
-            disabled={loading}
-            className="bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
-          >
-            📏 Calculate Travel & Rations
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAction("narrative")}
-            disabled={loading}
-            className="bg-purple-700 hover:bg-purple-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
-          >
-            📖 Generate Narrative
-          </button>
-          <button
-            type="button"
-            onClick={() => handleAction("challenges")}
-            disabled={loading}
-            className="bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
-          >
-            ⚔️ Generate Challenges
-          </button>
-          <button
             type="submit"
             disabled={loading}
             className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
           >
-            ✨ Generate All
+            ✨ Generate Journey
+          </button>
+          {result && (
+            <button
+              type="button"
+              onClick={handleReturnJourney}
+              disabled={loading}
+              className="bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+            >
+              🔄 Return Journey
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={handleNewJourney}
+            disabled={loading}
+            className="bg-stone-700 hover:bg-stone-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+          >
+            🗺️ New Journey
           </button>
         </div>
 
