@@ -7,6 +7,13 @@ import { calculateRations, totalRationsForStage } from "@/lib/rations";
 import { generateEncounters } from "@/lib/encounters";
 import { generateNarrative } from "@/lib/narrative";
 import { createRng } from "@/lib/dice";
+import {
+  timeOfDayToSlotHour,
+  computeArrival,
+  nextStageDeparture,
+  slotHourToLabel,
+  formatArrivalDate,
+} from "@/lib/travel-time";
 
 export type GenerateMode = "calculate" | "narrative" | "challenges" | "all";
 
@@ -16,6 +23,11 @@ export async function generateJourney(
   seed?: number
 ): Promise<JourneyResult> {
   const rng = createRng(seed ?? Date.now());
+
+  // Track the current calendar position as we chain stages
+  let currentDayIndex = 0;
+  let currentSlotHour =
+    data.stages.length > 0 ? timeOfDayToSlotHour(data.stages[0].startTimeOfDay) : 0;
 
   const stages: StageResult[] = data.stages.map((stage, index) => {
     const stageNumber = index + 1;
@@ -44,6 +56,24 @@ export async function generateJourney(
       narrative = generateNarrative(normalizedStage, data.characters, encounter);
     }
 
+    // Compute arrival date/time for this stage
+    const travelHoursNeeded = daysRequired * 8;
+    const arrival = computeArrival(currentDayIndex, currentSlotHour, travelHoursNeeded);
+    const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);
+    const endTimeLabel = slotHourToLabel(arrival.slotHour);
+
+    // Advance the calendar cursor to the next stage's departure
+    const nextStage = data.stages[index + 1];
+    if (nextStage) {
+      const dep = nextStageDeparture(
+        arrival.dayIndex,
+        arrival.slotHour,
+        nextStage.startTimeOfDay
+      );
+      currentDayIndex = dep.dayIndex;
+      currentSlotHour = dep.slotHour;
+    }
+
     return {
       stageNumber,
       effectiveMilesPerDay,
@@ -55,6 +85,8 @@ export async function generateJourney(
       totalRations,
       encounter,
       narrative,
+      endDate,
+      endTimeLabel,
     };
   });
 

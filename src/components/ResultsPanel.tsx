@@ -68,7 +68,17 @@ export default function ResultsPanel({ result }: Props) {
 
       {result.stages.map((stage) => (
         <div key={stage.stageNumber} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
-          <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
+            {stage.endDate && (
+              <p className="text-sm text-stone-400">
+                Arrives{" "}
+                <span className="text-white font-semibold">{stage.endTimeLabel}</span>
+                {", "}
+                <span className="text-white font-semibold">{stage.endDate}</span>
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div className="bg-stone-800 rounded p-3">

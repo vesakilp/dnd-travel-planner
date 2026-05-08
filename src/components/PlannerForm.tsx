@@ -43,6 +43,7 @@ export default function PlannerForm() {
     defaultValues: {
       characters: [{ id: crypto.randomUUID(), name: "", species: "", characterClass: "", level: 1 }],
       stages: [DEFAULT_STAGE(1)],
+      journeyStartDate: "",
     },
   });
 
@@ -137,6 +138,19 @@ export default function PlannerForm() {
             >
               + Add Stage
             </button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label htmlFor="journey-start-date" className="text-sm text-amber-200 whitespace-nowrap">
+              📅 Journey Start Date
+            </label>
+            <input
+              id="journey-start-date"
+              type="date"
+              {...register("journeyStartDate")}
+              className="bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+            />
+            <span className="text-stone-500 text-xs">(optional — leave blank for "Day N" display)</span>
           </div>
           {errors.stages?.root && (
             <p className="text-red-400 text-sm">{errors.stages.root.message}</p>

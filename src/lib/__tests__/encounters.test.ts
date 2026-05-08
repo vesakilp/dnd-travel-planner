@@ -20,15 +20,18 @@ describe("generateEncounters", () => {
   });
 
   it("triggered encounters have monster data", () => {
-    // Find a seed that triggers an encounter
+    // Find a seed that triggers an encounter — with ~36% chance per seed, 100 tries is sufficient
+    let found = false;
     for (let seed = 0; seed < 100; seed++) {
       const rng = createRng(seed);
       const result = generateEncounters(rng);
       if (result.dayRoll.triggered) {
         expect(result.dayRoll.monsterName).toBeTruthy();
         expect(result.dayRoll.monsterCount).toBeTruthy();
-        return;
+        found = true;
+        break;
       }
     }
+    expect(found).toBe(true);
   });
 });
