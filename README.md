@@ -1,11 +1,11 @@
 # 🏔️ DnD Travel Planner
 
-A production-ready Next.js 15 App Router application for Dungeon Masters to plan wilderness journeys for their D&D parties. Calculate travel times, ration requirements, generate encounter rolls, and produce immersive narrative text for up to 3 journey stages.
+A production-ready Next.js 15 App Router application for Dungeon Masters to plan wilderness journeys for their D&D parties. Calculate travel times, ration requirements, generate encounter rolls, and produce immersive narrative text across as many journey stages as needed.
 
 ## Features
 
 - **Party management** — Add up to any number of adventurers with name, species, class, and level
-- **3-stage journey planning** — Each stage has its own terrain, pace, season, vehicle, and distance
+- **Flexible journey planning** — Start with one stage, then add more as needed, each with its own terrain, pace, season, vehicle, and distance
 - **Travel calculation** — Computes effective miles/day with terrain multipliers and vehicle overrides
 - **Rations tracking** — Per-character and total ration counts per stage and grand total
 - **Random encounters** — d20 day and night encounter checks with monster lookup tables (d12)

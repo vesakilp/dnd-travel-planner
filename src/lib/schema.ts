@@ -9,7 +9,7 @@ export const CharacterSchema = z.object({
 });
 
 export const StageInputSchema = z.object({
-  stageNumber: z.union([z.literal(1), z.literal(2), z.literal(3)]),
+  stageNumber: z.number().int().positive(),
   startLocation: z.string().min(1, "Start location is required"),
   startTimeOfDay: z.enum(["morning", "afternoon", "evening", "night"]),
   endLocation: z.string().min(1, "End location is required"),
@@ -27,7 +27,7 @@ export const StageInputSchema = z.object({
 
 export const PlannerFormSchema = z.object({
   characters: z.array(CharacterSchema).min(1, "Add at least one character"),
-  stages: z.array(StageInputSchema).length(3),
+  stages: z.array(StageInputSchema).min(1, "Add at least one stage"),
 });
 
 export type PlannerFormData = z.infer<typeof PlannerFormSchema>;

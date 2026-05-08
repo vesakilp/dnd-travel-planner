@@ -3,25 +3,35 @@ import { UseFormRegister, FieldErrors, Control, useWatch } from "react-hook-form
 import { PlannerFormData } from "@/lib/schema";
 import { TERRAIN_CONFIG } from "@/lib/terrain";
 
-const STAGE_LABELS = ["", "Stage 1", "Stage 2", "Stage 3"] as const;
-
 interface Props {
   stageIndex: number;
   register: UseFormRegister<PlannerFormData>;
   control: Control<PlannerFormData>;
   errors: FieldErrors<PlannerFormData>;
+  canRemove: boolean;
+  onRemove: () => void;
 }
 
-export default function StageSection({ stageIndex, register, control, errors }: Props) {
+export default function StageSection({ stageIndex, register, control, errors, canRemove, onRemove }: Props) {
   const stageErrors = errors.stages?.[stageIndex];
   const vehicle = useWatch({ control, name: `stages.${stageIndex}.vehicle` });
   const showSpeedOverride = vehicle === "land_vehicle" || vehicle === "waterborne";
 
   return (
     <section aria-labelledby={`stage-${stageIndex + 1}-heading`} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
-      <h2 id={`stage-${stageIndex + 1}-heading`} className="text-xl font-bold text-amber-400">
-        🗺️ {STAGE_LABELS[stageIndex + 1]}
-      </h2>
+      <div className="flex items-center justify-between gap-4">
+        <h2 id={`stage-${stageIndex + 1}-heading`} className="text-xl font-bold text-amber-400">
+          🗺️ Stage {stageIndex + 1}
+        </h2>
+        <button
+          type="button"
+          onClick={onRemove}
+          disabled={!canRemove}
+          className="rounded bg-stone-800 px-3 py-2 text-sm text-stone-200 transition-colors hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Remove Stage
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
