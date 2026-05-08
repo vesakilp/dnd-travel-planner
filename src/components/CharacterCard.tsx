@@ -28,19 +28,7 @@ export default function CharacterCard({ index, register, control, errors, onRemo
         aria-expanded={isOpen}
       >
         <h3 className="font-semibold text-amber-300">{displayName}</h3>
-        <div className="flex items-center gap-3">
-          {canRemove && (
-            <button
-              type="button"
-              onClick={(e) => { e.stopPropagation(); onRemove(); }}
-              className="text-red-400 hover:text-red-300 text-sm"
-              aria-label={`Remove ${displayName}`}
-            >
-              Remove
-            </button>
-          )}
-          <span className="text-amber-400 text-xs">{isOpen ? "▲" : "▼"}</span>
-        </div>
+        <span className="text-amber-400 text-xs">{isOpen ? "▲" : "▼"}</span>
       </button>
 
       {isOpen && (
@@ -93,6 +81,19 @@ export default function CharacterCard({ index, register, control, errors, onRemo
               {charErrors?.level && <p className="text-red-400 text-xs mt-1">{charErrors.level.message}</p>}
             </div>
           </div>
+
+          {canRemove && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={onRemove}
+                className="text-red-400 hover:text-red-300 text-sm border border-red-800 hover:border-red-600 rounded px-3 py-1 transition-colors"
+                aria-label={`Remove ${displayName}`}
+              >
+                Remove Adventurer
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
