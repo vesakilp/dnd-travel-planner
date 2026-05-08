@@ -1,4 +1,5 @@
 import { TimeOfDay } from "./types";
+import { parseDrString, addDrDays, harptosDateToString, toDrString } from "./harptos";
 
 /**
  * Hours already elapsed in the 8-hour travel window when departing at a given time of day.
@@ -99,25 +100,31 @@ export function nextStageDeparture(
 }
 
 /**
- * Format an arrival date for display.
- * If journeyStartDate is provided (YYYY-MM-DD), returns a formatted calendar date.
- * Otherwise returns "Day N" (1-based).
+ * Format an arrival date for display using the Harptos (Dale Reckoning) calendar.
+ * If journeyStartDate is provided as "DR:{year}:{dayOfYear}", returns a formatted
+ * Harptos date string. Otherwise returns "Day N" (1-based).
  */
 export function formatArrivalDate(
   journeyStartDate: string | undefined,
   dayIndex: number
 ): string {
-  if (!journeyStartDate) return `Day ${dayIndex + 1}`;
-  try {
-    const [y, m, d] = journeyStartDate.split("-").map(Number);
-    const date = new Date(y, m - 1, d + dayIndex);
-    return date.toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  } catch {
-    return `Day ${dayIndex + 1}`;
-  }
+  const parsed = parseDrString(journeyStartDate);
+  if (!parsed) return `Day ${dayIndex + 1}`;
+  const { year, dayOfYear } = addDrDays(parsed.year, parsed.dayOfYear, dayIndex);
+  return harptosDateToString(year, dayOfYear);
+}
+
+/**
+ * Return the raw internal "DR:year:dayOfYear" string for an arrival date.
+ * Used to chain journey start dates after a completed journey.
+ * Returns undefined if no start date was provided.
+ */
+export function rawHarptosDate(
+  journeyStartDate: string | undefined,
+  dayIndex: number
+): string | undefined {
+  const parsed = parseDrString(journeyStartDate);
+  if (!parsed) return undefined;
+  const { year, dayOfYear } = addDrDays(parsed.year, parsed.dayOfYear, dayIndex);
+  return toDrString(year, dayOfYear);
 }

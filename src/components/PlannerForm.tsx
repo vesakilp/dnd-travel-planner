@@ -5,9 +5,11 @@ import { useState, useEffect } from "react";
 import { PlannerFormSchema, PlannerFormData } from "@/lib/schema";
 import { generateJourney } from "@/app/actions";
 import { JourneyResult } from "@/lib/types";
+import { DEFAULT_DR_DATE } from "@/lib/harptos";
 import PartySection from "./PartySection";
 import StageSection from "./StageSection";
 import ResultsPanel from "./ResultsPanel";
+import HarptosDatePicker from "./HarptosDatePicker";
 
 const DEFAULT_STAGE = (stageNumber: number) => ({
   stageNumber,
@@ -43,7 +45,7 @@ export default function PlannerForm() {
     defaultValues: {
       characters: [{ id: crypto.randomUUID(), name: "", species: "", characterClass: "", level: 1 }],
       stages: [DEFAULT_STAGE(1)],
-      journeyStartDate: "",
+      journeyStartDate: DEFAULT_DR_DATE,
     },
   });
 
@@ -83,6 +85,10 @@ export default function PlannerForm() {
     try {
       const res = await generateJourney(data, "all");
       setResult(res);
+      // Advance the journey start date to the last stage's arrival date
+      if (res.lastEndDateRaw) {
+        setValue("journeyStartDate", res.lastEndDateRaw);
+      }
       setTimeout(() => {
         document.getElementById("results-heading")?.scrollIntoView({ behavior: "smooth" });
       }, 100);
@@ -118,7 +124,8 @@ export default function PlannerForm() {
     );
     if (!confirmed) return;
     const characters = getValues("characters");
-    reset({ characters, stages: [DEFAULT_STAGE(1)] });
+    const startDate = getValues("journeyStartDate") || DEFAULT_DR_DATE;
+    reset({ characters, stages: [DEFAULT_STAGE(1)], journeyStartDate: startDate });
     setResult(null);
     setError(null);
   }
@@ -140,17 +147,14 @@ export default function PlannerForm() {
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label htmlFor="journey-start-date" className="text-sm text-amber-200 whitespace-nowrap">
-              📅 Journey Start Date
+          <div className="space-y-1">
+            <label className="block text-sm text-amber-200">
+              📅 Journey Start Date <span className="text-stone-500 text-xs">(Dale Reckoning)</span>
             </label>
-            <input
-              id="journey-start-date"
-              type="date"
-              {...register("journeyStartDate")}
-              className="bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+            <HarptosDatePicker
+              value={getValues("journeyStartDate") || DEFAULT_DR_DATE}
+              onChange={(drString) => setValue("journeyStartDate", drString)}
             />
-            <span className="text-stone-500 text-xs">(optional — leave blank for "Day N" display)</span>
           </div>
           {errors.stages?.root && (
             <p className="text-red-400 text-sm">{errors.stages.root.message}</p>

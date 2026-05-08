@@ -6,6 +6,7 @@ import { getTerrainMultiplier } from "@/lib/terrain";
 import { calculateRations, totalRationsForStage } from "@/lib/rations";
 import { generateEncounters } from "@/lib/encounters";
 import { generateNarrative } from "@/lib/narrative";
+import { generateAiNarrative } from "@/lib/ai-narrative";
 import { createRng } from "@/lib/dice";
 import {
   timeOfDayToSlotHour,
@@ -13,6 +14,7 @@ import {
   nextStageDeparture,
   slotHourToLabel,
   formatArrivalDate,
+  rawHarptosDate,
 } from "@/lib/travel-time";
 
 export type GenerateMode = "calculate" | "narrative" | "challenges" | "all";
@@ -29,7 +31,11 @@ export async function generateJourney(
   let currentSlotHour =
     data.stages.length > 0 ? timeOfDayToSlotHour(data.stages[0].startTimeOfDay) : 0;
 
-  const stages: StageResult[] = data.stages.map((stage, index) => {
+  let lastEndDateRaw: string | undefined;
+
+  const stages: StageResult[] = [];
+  for (let index = 0; index < data.stages.length; index++) {
+    const stage = data.stages[index];
     const stageNumber = index + 1;
     const normalizedStage = { ...stage, stageNumber };
     const terrainMultiplier = getTerrainMultiplier(stage.terrain);
@@ -52,15 +58,26 @@ export async function generateJourney(
       encounter = generateEncounters(rng);
     }
 
-    if (mode === "narrative" || mode === "all") {
-      narrative = generateNarrative(normalizedStage, data.characters, encounter);
-    }
-
     // Compute arrival date/time for this stage
     const travelHoursNeeded = daysRequired * 8;
     const arrival = computeArrival(currentDayIndex, currentSlotHour, travelHoursNeeded);
     const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);
     const endTimeLabel = slotHourToLabel(arrival.slotHour);
+    lastEndDateRaw = rawHarptosDate(data.journeyStartDate, arrival.dayIndex);
+
+    if (mode === "narrative" || mode === "all") {
+      // Attempt AI narrative first; fall back to the rich template
+      const aiResult = await generateAiNarrative(
+        normalizedStage,
+        data.characters,
+        encounter,
+        endDate
+      );
+      narrative = aiResult ?? generateNarrative(normalizedStage, data.characters, encounter, {
+        rng,
+        endDateFormatted: endDate,
+      });
+    }
 
     // Advance the calendar cursor to the next stage's departure
     const nextStage = data.stages[index + 1];
@@ -74,7 +91,7 @@ export async function generateJourney(
       currentSlotHour = dep.slotHour;
     }
 
-    return {
+    stages.push({
       stageNumber,
       effectiveMilesPerDay,
       daysRequired,
@@ -87,10 +104,11 @@ export async function generateJourney(
       narrative,
       endDate,
       endTimeLabel,
-    };
-  });
+    });
+  }
 
   const grandTotalRations = stages.reduce((sum, s) => sum + s.totalRations, 0);
 
-  return { stages, grandTotalRations };
+  return { stages, grandTotalRations, lastEndDateRaw };
 }
+

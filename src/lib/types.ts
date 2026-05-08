@@ -79,6 +79,8 @@ export interface StageResult {
 export interface JourneyResult {
   stages: StageResult[];
   grandTotalRations: number;
+  /** The raw "DR:year:dayOfYear" arrival date of the last stage, for chaining journeys. */
+  lastEndDateRaw?: string;
 }
 
 export interface PlannerFormData {

@@ -120,16 +120,27 @@ describe("formatArrivalDate", () => {
     expect(formatArrivalDate("", 2)).toBe("Day 3");
   });
 
-  it("returns formatted date when start date is provided", () => {
-    const result = formatArrivalDate("2024-06-15", 0);
-    expect(result).toContain("2024");
-    expect(result).toContain("Jun");
-    expect(result).toContain("15");
+  it("returns a Harptos date string when a DR date is provided", () => {
+    // DR:1491:175 = 23 Kythorn 1491 DR; dayIndex 0 → same day
+    const result = formatArrivalDate("DR:1491:175", 0);
+    expect(result).toContain("Kythorn");
+    expect(result).toContain("23");
+    expect(result).toContain("1491");
+    expect(result).toContain("DR");
   });
 
   it("advances the date correctly by dayIndex", () => {
-    const result = formatArrivalDate("2024-06-15", 5);
-    expect(result).toContain("Jun");
-    expect(result).toContain("20");
+    // DR:1491:175 + 7 days = day 182 = 30 Kythorn 1491 DR
+    const result = formatArrivalDate("DR:1491:175", 7);
+    expect(result).toContain("Kythorn");
+    expect(result).toContain("1491");
+  });
+
+  it("crosses a month boundary correctly", () => {
+    // DR:1491:182 (30 Kythorn) + 1 day = day 183 = 1 Flamerule 1491 DR
+    const result = formatArrivalDate("DR:1491:182", 1);
+    expect(result).toContain("Flamerule");
+    expect(result).toContain("1");
+    expect(result).toContain("1491");
   });
 });
