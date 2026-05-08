@@ -1,11 +1,11 @@
 import { TimeOfDay } from "./types";
 
 /**
- * How many travel hours remain in the day when departing at a given time.
- * Characters travel 8 hours a day (morning to evening).
- * Departing at evening or night means they camp immediately and resume next morning.
+ * Hours already elapsed in the 8-hour travel window when departing at a given time of day.
+ * 0 = morning (full day ahead), 4 = afternoon (half day ahead),
+ * 8 = evening/night (no travel today — camp and resume next morning).
  */
-const SLOT_HOURS: Record<TimeOfDay, number> = {
+const DEPARTURE_OFFSET_HOURS: Record<TimeOfDay, number> = {
   morning: 0,
   afternoon: 4,
   evening: 8,
@@ -14,7 +14,7 @@ const SLOT_HOURS: Record<TimeOfDay, number> = {
 
 /** Convert a TimeOfDay value to the number of hours already elapsed in the travel window. */
 export function timeOfDayToSlotHour(tod: TimeOfDay): number {
-  return SLOT_HOURS[tod];
+  return DEPARTURE_OFFSET_HOURS[tod];
 }
 
 /**
@@ -53,6 +53,8 @@ export function computeArrival(
   // Use up today's travel window, camp, and continue next days
   const remaining = travelHoursNeeded - availableToday;
   const additionalDays = Math.ceil(remaining / 8);
+  // When remaining is an exact multiple of 8 the party fills the last day completely,
+  // arriving at evening (slotHour 8). Otherwise they arrive mid-day.
   const finalSlotHour = remaining % 8 === 0 ? 8 : remaining % 8;
   return { dayIndex: dayIdx + additionalDays, slotHour: finalSlotHour };
 }
