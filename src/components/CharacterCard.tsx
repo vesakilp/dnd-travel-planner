@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { UseFormRegister, FieldErrors, Control, useWatch } from "react-hook-form";
 import { PlannerFormData } from "@/lib/schema";
 
@@ -15,15 +15,29 @@ interface Props {
 export default function CharacterCard({ index, register, control, errors, onRemove, canRemove }: Props) {
   const charErrors = errors.characters?.[index];
   const nameValue = useWatch({ control, name: `characters.${index}.name` });
-  const [isOpen, setIsOpen] = useState(() => !nameValue);
+  // Start open; auto-close once a name appears (e.g. restored from localStorage),
+  // but only if the user has not yet manually toggled the accordion.
+  const [isOpen, setIsOpen] = useState(true);
+  const userToggledRef = useRef(false);
+
+  useEffect(() => {
+    if (!userToggledRef.current && nameValue?.trim()) {
+      setIsOpen(false);
+    }
+  }, [nameValue]);
 
   const displayName = nameValue?.trim() || `Adventurer ${index + 1}`;
+
+  function toggle() {
+    userToggledRef.current = true;
+    setIsOpen((o) => !o);
+  }
 
   return (
     <div className="border border-amber-700 rounded-lg bg-amber-950/30 overflow-hidden">
       <button
         type="button"
-        onClick={() => setIsOpen((o) => !o)}
+        onClick={toggle}
         className="w-full flex justify-between items-center px-4 py-3 text-left hover:bg-amber-900/30 transition-colors"
         aria-expanded={isOpen}
       >

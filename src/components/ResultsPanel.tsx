@@ -27,7 +27,7 @@ export default function ResultsPanel({ result }: Props) {
       }
     }
   }
-  const characterTotals = Array.from(rationsByCharacter.values());
+  const characterTotals = Array.from(rationsByCharacter.entries()).map(([id, v]) => ({ id, ...v }));
 
   // Total journey time (sum of all stages' daysRequired, includes camping nights)
   const totalDays = result.stages.reduce((sum, s) => sum + s.daysRequired, 0);
@@ -55,7 +55,7 @@ export default function ResultsPanel({ result }: Props) {
               </thead>
               <tbody>
                 {characterTotals.map((ct) => (
-                  <tr key={ct.name} className="border-t border-amber-900">
+                  <tr key={ct.id} className="border-t border-amber-900">
                     <td className="py-1 text-white">{ct.name}</td>
                     <td className="py-1 text-right text-white font-semibold">{ct.total}</td>
                   </tr>
