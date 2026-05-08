@@ -26,14 +26,19 @@ export async function generateJourney(
 ): Promise<JourneyResult> {
   const rng = createRng(seed ?? Date.now());
 
-  // Track the current calendar position as we chain stages
+  // Build stage data without narratives first
+  type StageData = Omit<StageResult, "narrative"> & {
+    normalizedStage: typeof data.stages[0] & { stageNumber: number };
+    encounter?: import("@/lib/types").EncounterResult;
+    endDate: string;
+  };
+
+  const stageData: StageData[] = [];
   let currentDayIndex = 0;
   let currentSlotHour =
     data.stages.length > 0 ? timeOfDayToSlotHour(data.stages[0].startTimeOfDay) : 0;
-
   let lastEndDateRaw: string | undefined;
 
-  const stages: StageResult[] = [];
   for (let index = 0; index < data.stages.length; index++) {
     const stage = data.stages[index];
     const stageNumber = index + 1;
@@ -52,46 +57,24 @@ export async function generateJourney(
     const totalRations = totalRationsForStage(characterRations);
 
     let encounter: import("@/lib/types").EncounterResult | undefined;
-    let narrative: string | undefined;
-
     if (mode === "challenges" || mode === "all") {
       encounter = generateEncounters(rng);
     }
 
-    // Compute arrival date/time for this stage
     const travelHoursNeeded = daysRequired * 8;
     const arrival = computeArrival(currentDayIndex, currentSlotHour, travelHoursNeeded);
     const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);
     const endTimeLabel = slotHourToLabel(arrival.slotHour);
     lastEndDateRaw = rawHarptosDate(data.journeyStartDate, arrival.dayIndex);
 
-    if (mode === "narrative" || mode === "all") {
-      // Attempt AI narrative first; fall back to the rich template
-      const aiResult = await generateAiNarrative(
-        normalizedStage,
-        data.characters,
-        encounter,
-        endDate
-      );
-      narrative = aiResult ?? generateNarrative(normalizedStage, data.characters, encounter, {
-        rng,
-        endDateFormatted: endDate,
-      });
-    }
-
-    // Advance the calendar cursor to the next stage's departure
     const nextStage = data.stages[index + 1];
     if (nextStage) {
-      const dep = nextStageDeparture(
-        arrival.dayIndex,
-        arrival.slotHour,
-        nextStage.startTimeOfDay
-      );
+      const dep = nextStageDeparture(arrival.dayIndex, arrival.slotHour, nextStage.startTimeOfDay);
       currentDayIndex = dep.dayIndex;
       currentSlotHour = dep.slotHour;
     }
 
-    stages.push({
+    stageData.push({
       stageNumber,
       effectiveMilesPerDay,
       daysRequired,
@@ -101,11 +84,36 @@ export async function generateJourney(
       characterRations,
       totalRations,
       encounter,
-      narrative,
       endDate,
       endTimeLabel,
+      normalizedStage,
     });
   }
+
+  // Generate all narratives in parallel (AI calls or templates)
+  const narrativePromises = stageData.map(async (sd) => {
+    if (mode !== "narrative" && mode !== "all") return undefined;
+    const aiResult = await generateAiNarrative(
+      sd.normalizedStage,
+      data.characters,
+      sd.encounter,
+      sd.endDate
+    );
+    return aiResult ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
+      rng,
+      endDateFormatted: sd.endDate,
+    });
+  });
+
+  const narratives = await Promise.allSettled(narrativePromises);
+
+  const stages: StageResult[] = stageData.map((sd, i) => {
+    const narrativeResult = narratives[i];
+    const narrative = narrativeResult.status === "fulfilled" ? narrativeResult.value : undefined;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { normalizedStage: _norm, ...rest } = sd;
+    return { ...rest, narrative };
+  });
 
   const grandTotalRations = stages.reduce((sum, s) => sum + s.totalRations, 0);
 

@@ -313,11 +313,10 @@ export function generateNarrative(
     const c1 = characters[Math.floor(rng() * characters.length)];
     charMoments.push(pickCharacterMoment(c1, rng));
     if (characters.length > 1 && rng() > 0.4) {
-      let c2Idx: number;
-      do { c2Idx = Math.floor(rng() * characters.length); }
-      while (characters[c2Idx].id === c1.id && characters.length > 1);
-      if (characters[c2Idx].id !== c1.id) {
-        charMoments.push(pickCharacterMoment(characters[c2Idx], rng));
+      const otherChars = characters.filter((c) => c.id !== c1.id);
+      if (otherChars.length > 0) {
+        const c2 = otherChars[Math.floor(rng() * otherChars.length)];
+        charMoments.push(pickCharacterMoment(c2, rng));
       }
     }
   }
