@@ -30,16 +30,14 @@ export default function CharacterCard({ index, register, control, errors, onRemo
         <h3 className="font-semibold text-amber-300">{displayName}</h3>
         <div className="flex items-center gap-3">
           {canRemove && (
-            <span
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               onClick={(e) => { e.stopPropagation(); onRemove(); }}
-              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onRemove(); } }}
               className="text-red-400 hover:text-red-300 text-sm"
               aria-label={`Remove ${displayName}`}
             >
               Remove
-            </span>
+            </button>
           )}
           <span className="text-amber-400 text-xs">{isOpen ? "▲" : "▼"}</span>
         </div>
