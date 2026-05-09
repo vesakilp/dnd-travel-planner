@@ -157,7 +157,9 @@ export default function StageSection({ stageIndex, register, control, errors, ca
               })}
               className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500"
             >
-              <option value="">Select a vehicle option</option>
+              <option value="" disabled>
+                Select a vehicle option
+              </option>
               {availableVehicleOptions.map((option) => (
                 <option key={`${option.label}-${option.milesPerHour}`} value={option.milesPerHour}>
                   {option.label} ({milesPerDay(option.milesPerHour)} mi/day)
