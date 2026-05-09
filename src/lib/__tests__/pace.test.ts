@@ -26,6 +26,10 @@ describe("getEffectiveMilesPerDay", () => {
     const { effectiveMilesPerDay } = getEffectiveMilesPerDay("normal", 1, "waterborne", 5);
     expect(effectiveMilesPerDay).toBe(40);
   });
+  it("uses selected vehicle option speed for land vehicles", () => {
+    const { effectiveMilesPerDay } = getEffectiveMilesPerDay("normal", 1, "land_vehicle", 2);
+    expect(effectiveMilesPerDay).toBe(16);
+  });
 });
 
 describe("formatDuration", () => {
