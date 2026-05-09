@@ -28,6 +28,7 @@ export const StageInputSchema = z.object({
 export const PlannerFormSchema = z.object({
   characters: z.array(CharacterSchema).min(1, "Add at least one character"),
   stages: z.array(StageInputSchema).min(1, "Add at least one stage"),
+  journeyStartDate: z.string().optional(),
 });
 
 export type PlannerFormData = z.infer<typeof PlannerFormSchema>;

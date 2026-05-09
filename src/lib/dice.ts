@@ -1,9 +1,11 @@
-// Seedable pseudo-random using a simple mulberry32 PRNG
+// Seedable pseudo-random using the mulberry32 PRNG (full 32-bit output range)
 export function createRng(seed: number): () => number {
   let s = seed >>> 0;
   return function () {
-    s = (Math.imul(36969, s & 65535) + (s >>> 16)) >>> 0;
-    return (s >>> 0) / 4294967296;
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t ^= t + Math.imul(t ^ (t >>> 7), 61 | t);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 

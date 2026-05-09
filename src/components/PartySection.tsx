@@ -36,6 +36,7 @@ export default function PartySection({ register, control, errors }: Props) {
           key={field.id}
           index={index}
           register={register}
+          control={control}
           errors={errors}
           onRemove={() => remove(index)}
           canRemove={fields.length > 1}

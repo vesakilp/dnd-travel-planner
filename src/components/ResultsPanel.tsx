@@ -1,5 +1,6 @@
 "use client";
 import { JourneyResult } from "@/lib/types";
+import { formatDuration } from "@/lib/pace";
 
 interface Props {
   result: JourneyResult | null;
@@ -14,19 +15,70 @@ export default function ResultsPanel({ result }: Props) {
     );
   }
 
+  // Aggregate rations per character across all stages
+  const rationsByCharacter = new Map<string, { name: string; total: number }>();
+  for (const stage of result.stages) {
+    for (const cr of stage.characterRations) {
+      const existing = rationsByCharacter.get(cr.characterId);
+      if (existing) {
+        existing.total += cr.rations;
+      } else {
+        rationsByCharacter.set(cr.characterId, { name: cr.characterName, total: cr.rations });
+      }
+    }
+  }
+  const characterTotals = Array.from(rationsByCharacter.entries()).map(([id, v]) => ({ id, ...v }));
+
+  // Total journey time (sum of all stages' daysRequired, includes camping nights)
+  const totalDays = result.stages.reduce((sum, s) => sum + s.daysRequired, 0);
+  const totalDuration = formatDuration(totalDays);
+
   return (
     <section aria-labelledby="results-heading" className="space-y-6">
       <h2 id="results-heading" className="text-xl font-bold text-amber-400">📜 Journey Results</h2>
 
-      <div className="bg-amber-950/30 border border-amber-800 rounded-lg p-4 text-center">
-        <p className="text-amber-200 text-lg">
-          Grand Total Rations: <span className="font-bold text-white text-2xl">{result.grandTotalRations}</span>
-        </p>
+      <div className="bg-amber-950/30 border border-amber-800 rounded-lg p-4 space-y-4">
+        <div className="text-center">
+          <p className="text-stone-400 text-sm mb-1">⏱ Total Journey Time</p>
+          <p className="text-white font-bold text-2xl">{totalDuration}</p>
+        </div>
+
+        {characterTotals.length > 0 && (
+          <div>
+            <p className="text-amber-200 text-sm font-semibold mb-2">🎒 Total Rations per Adventurer</p>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-stone-400 text-left">
+                  <th className="pb-1">Adventurer</th>
+                  <th className="pb-1 text-right">Total Rations</th>
+                </tr>
+              </thead>
+              <tbody>
+                {characterTotals.map((ct) => (
+                  <tr key={ct.id} className="border-t border-amber-900">
+                    <td className="py-1 text-white">{ct.name}</td>
+                    <td className="py-1 text-right text-white font-semibold">{ct.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {result.stages.map((stage) => (
         <div key={stage.stageNumber} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
-          <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
+            {stage.endDate && (
+              <p className="text-sm text-stone-400">
+                Arrives{" "}
+                <span className="text-white font-semibold">{stage.endTimeLabel}</span>
+                {", "}
+                <span className="text-white font-semibold">{stage.endDate}</span>
+              </p>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
             <div className="bg-stone-800 rounded p-3">

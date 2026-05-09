@@ -70,14 +70,21 @@ export interface StageResult {
   totalRations: number;
   encounter?: EncounterResult;
   narrative?: string;
+  /** Calendar date the stage ends on (formatted string or "Day N" when no start date). */
+  endDate?: string;
+  /** Human-readable time of day when the stage ends: "Morning", "Afternoon", or "Evening". */
+  endTimeLabel?: string;
 }
 
 export interface JourneyResult {
   stages: StageResult[];
   grandTotalRations: number;
+  /** The raw "DR:year:dayOfYear" arrival date of the last stage, for chaining journeys. */
+  lastEndDateRaw?: string;
 }
 
 export interface PlannerFormData {
   characters: Character[];
   stages: StageInput[];
+  journeyStartDate?: string;
 }
