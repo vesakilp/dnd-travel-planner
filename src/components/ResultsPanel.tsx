@@ -68,66 +68,30 @@ export default function ResultsPanel({ result }: Props) {
 
       {result.stages.map((stage) => (
         <div key={stage.stageNumber} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
-            {stage.endDate && (
-              <p className="text-sm text-stone-400">
-                Arrives{" "}
-                <span className="text-white font-semibold">{stage.endTimeLabel}</span>
-                {", "}
-                <span className="text-white font-semibold">{stage.endDate}</span>
-              </p>
-            )}
-          </div>
+          <h3 className="text-lg font-bold text-amber-300">Stage {stage.stageNumber}</h3>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
             <div className="bg-stone-800 rounded p-3">
-              <p className="text-stone-400">Duration</p>
-              <p className="text-white font-semibold">{stage.humanReadableDuration}</p>
+              <p className="text-stone-400">Stage Start</p>
+              <p className="text-white font-semibold">
+                Day {stage.startDayNumber}, {stage.startTimeLabel.toLowerCase()}
+              </p>
             </div>
             <div className="bg-stone-800 rounded p-3">
-              <p className="text-stone-400">Effective Pace</p>
-              <p className="text-white font-semibold">{Math.round(stage.effectiveMilesPerDay * 10) / 10} mi/day</p>
+              <p className="text-stone-400">Stage End</p>
+              <p className="text-white font-semibold">
+                Day {stage.endDayNumber}, {stage.endTimeLabel?.toLowerCase()}
+              </p>
             </div>
             <div className="bg-stone-800 rounded p-3">
               <p className="text-stone-400">Days Required</p>
               <p className="text-white font-semibold">{Math.round(stage.daysRequired * 10) / 10}</p>
             </div>
-            <div className="bg-stone-800 rounded p-3">
-              <p className="text-stone-400">Stage Rations</p>
-              <p className="text-white font-semibold">{stage.totalRations}</p>
-            </div>
-          </div>
-
-          <div className="bg-blue-950/40 border border-blue-800 rounded p-3 text-sm text-blue-200">
-            ℹ️ {stage.paceReminder}
           </div>
 
           {stage.vehicleWarning && (
             <div className="bg-yellow-950/40 border border-yellow-700 rounded p-3 text-sm text-yellow-200">
               ⚠️ {stage.vehicleWarning}
-            </div>
-          )}
-
-          {stage.characterRations.length > 0 && (
-            <div>
-              <h4 className="text-sm font-semibold text-amber-200 mb-2">Rations per Character</h4>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-stone-400 text-left">
-                    <th className="pb-1">Adventurer</th>
-                    <th className="pb-1 text-right">Rations</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {stage.characterRations.map((cr) => (
-                    <tr key={cr.characterId} className="border-t border-stone-700">
-                      <td className="py-1 text-white">{cr.characterName}</td>
-                      <td className="py-1 text-right text-white">{cr.rations}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           )}
 

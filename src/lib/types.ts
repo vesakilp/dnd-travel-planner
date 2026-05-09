@@ -94,6 +94,12 @@ export interface StageResult {
   aiDebugLog?: AiDebugLog;
   /** Calendar date the stage ends on (formatted string or "Day N" when no start date). */
   endDate?: string;
+  /** 1-based journey day on which stage travel starts. */
+  startDayNumber: number;
+  /** Human-readable time of day when the stage starts: "Morning", "Afternoon", or "Evening". */
+  startTimeLabel: string;
+  /** 1-based journey day on which stage travel ends. */
+  endDayNumber: number;
   /** Human-readable time of day when the stage ends: "Morning", "Afternoon", or "Evening". */
   endTimeLabel?: string;
 }

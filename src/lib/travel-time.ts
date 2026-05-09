@@ -35,14 +35,9 @@ export function computeArrival(
   startSlotHour: number,
   travelHoursNeeded: number
 ): { dayIndex: number; slotHour: number } {
-  let dayIdx = startDayIndex;
-  let slotHour = startSlotHour;
-
-  // If departing at evening or night, camp immediately and resume next morning
-  if (slotHour >= 8) {
-    dayIdx += 1;
-    slotHour = 0;
-  }
+  const normalizedStart = normalizeDeparture(startDayIndex, startSlotHour);
+  let dayIdx = normalizedStart.dayIndex;
+  let slotHour = normalizedStart.slotHour;
 
   const availableToday = 8 - slotHour;
 
@@ -70,6 +65,15 @@ export function slotHourToLabel(h: number): string {
   return "Evening";
 }
 
+/** Normalize a departure to the next valid travel slot if needed. */
+export function normalizeDeparture(
+  dayIndex: number,
+  slotHour: number
+): { dayIndex: number; slotHour: number } {
+  if (slotHour >= 8) return { dayIndex: dayIndex + 1, slotHour: 0 };
+  return { dayIndex, slotHour };
+}
+
 /**
  * Compute the departure for the next stage given the arrival of the current one and
  * the next stage's declared startTimeOfDay.
@@ -80,23 +84,9 @@ export function slotHourToLabel(h: number): string {
  */
 export function nextStageDeparture(
   arrivalDayIndex: number,
-  arrivalSlotHour: number,
-  nextTod: TimeOfDay
+  arrivalSlotHour: number
 ): { dayIndex: number; slotHour: number } {
-  const nextSlotHour = timeOfDayToSlotHour(nextTod);
-
-  if (arrivalSlotHour >= 8) {
-    // Arrived at evening — mandatory camp, depart next morning
-    return { dayIndex: arrivalDayIndex + 1, slotHour: 0 };
-  }
-
-  if (nextSlotHour >= arrivalSlotHour) {
-    // Same day is fine
-    return { dayIndex: arrivalDayIndex, slotHour: nextSlotHour };
-  }
-
-  // Would need to depart before arrival — camp overnight, use declared time next day
-  return { dayIndex: arrivalDayIndex + 1, slotHour: nextSlotHour };
+  return normalizeDeparture(arrivalDayIndex, arrivalSlotHour);
 }
 
 /**

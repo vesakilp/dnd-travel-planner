@@ -85,28 +85,21 @@ describe("slotHourToLabel", () => {
 
 describe("nextStageDeparture", () => {
   it("arrived at evening → next morning", () => {
-    const dep = nextStageDeparture(2, 8, "morning");
+    const dep = nextStageDeparture(2, 8);
     expect(dep.dayIndex).toBe(3);
     expect(dep.slotHour).toBe(0);
   });
 
-  it("arrived at morning, next stage morning → same day", () => {
-    const dep = nextStageDeparture(1, 2, "morning");
-    // next slot 0 < arrival 2 → camp overnight
-    expect(dep.dayIndex).toBe(2);
-    expect(dep.slotHour).toBe(0);
+  it("arrived before evening → next stage starts immediately", () => {
+    const dep = nextStageDeparture(1, 2);
+    expect(dep.dayIndex).toBe(1);
+    expect(dep.slotHour).toBe(2);
   });
 
-  it("arrived at morning, next stage afternoon → same day afternoon", () => {
-    const dep = nextStageDeparture(1, 2, "afternoon");
+  it("arrived at afternoon → next stage starts same afternoon", () => {
+    const dep = nextStageDeparture(1, 4);
     expect(dep.dayIndex).toBe(1);
     expect(dep.slotHour).toBe(4);
-  });
-
-  it("arrived at afternoon, next stage morning → next day morning", () => {
-    const dep = nextStageDeparture(2, 4, "morning");
-    expect(dep.dayIndex).toBe(3);
-    expect(dep.slotHour).toBe(0);
   });
 });
 

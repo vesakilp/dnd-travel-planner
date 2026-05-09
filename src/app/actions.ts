@@ -12,6 +12,7 @@ import {
   timeOfDayToSlotHour,
   computeArrival,
   nextStageDeparture,
+  normalizeDeparture,
   slotHourToLabel,
   formatArrivalDate,
   rawHarptosDate,
@@ -62,14 +63,18 @@ export async function generateJourney(
     }
 
     const travelHoursNeeded = daysRequired * 8;
-    const arrival = computeArrival(currentDayIndex, currentSlotHour, travelHoursNeeded);
+    const departure = normalizeDeparture(currentDayIndex, currentSlotHour);
+    const startDayNumber = departure.dayIndex + 1;
+    const startTimeLabel = slotHourToLabel(departure.slotHour);
+    const arrival = computeArrival(departure.dayIndex, departure.slotHour, travelHoursNeeded);
+    const endDayNumber = arrival.dayIndex + 1;
     const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);
     const endTimeLabel = slotHourToLabel(arrival.slotHour);
     lastEndDateRaw = rawHarptosDate(data.journeyStartDate, arrival.dayIndex);
 
     const nextStage = data.stages[index + 1];
     if (nextStage) {
-      const dep = nextStageDeparture(arrival.dayIndex, arrival.slotHour, nextStage.startTimeOfDay);
+      const dep = nextStageDeparture(arrival.dayIndex, arrival.slotHour);
       currentDayIndex = dep.dayIndex;
       currentSlotHour = dep.slotHour;
     }
@@ -85,6 +90,9 @@ export async function generateJourney(
       totalRations,
       encounter,
       endDate,
+      startDayNumber,
+      startTimeLabel,
+      endDayNumber,
       endTimeLabel,
       normalizedStage,
     });
@@ -122,4 +130,3 @@ export async function generateJourney(
 
   return { stages, grandTotalRations, lastEndDateRaw };
 }
-

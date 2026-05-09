@@ -36,4 +36,27 @@ describe("generateJourney", () => {
     expect(result.stages.map((stage) => stage.stageNumber)).toEqual([1, 2]);
     expect(result.stages.map((stage) => stage.totalRations)).toEqual([1, 2]);
   });
+
+  it("uses only the first stage departure time and auto-chains later stage starts", async () => {
+    const stage1 = createStage(1, 12);
+    const stage2 = { ...createStage(2, 12), startTimeOfDay: "night" as const };
+    const result = await generateJourney(
+      {
+        characters: [baseCharacter],
+        stages: [stage1, stage2],
+      },
+      "calculate",
+      123
+    );
+
+    expect(result.stages[0].startDayNumber).toBe(1);
+    expect(result.stages[0].startTimeLabel).toBe("Morning");
+    expect(result.stages[0].endDayNumber).toBe(1);
+    expect(result.stages[0].endTimeLabel).toBe("Afternoon");
+
+    expect(result.stages[1].startDayNumber).toBe(1);
+    expect(result.stages[1].startTimeLabel).toBe("Afternoon");
+    expect(result.stages[1].endDayNumber).toBe(1);
+    expect(result.stages[1].endTimeLabel).toBe("Evening");
+  });
 });

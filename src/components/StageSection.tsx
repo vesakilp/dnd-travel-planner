@@ -56,19 +56,25 @@ export default function StageSection({ stageIndex, register, control, errors, ca
           {stageErrors?.endLocation && <p className="text-red-400 text-xs mt-1">{stageErrors.endLocation.message}</p>}
         </div>
 
-        <div>
-          <label htmlFor={`stage-${stageIndex}-time`} className="block text-sm text-amber-200 mb-1">Departure Time *</label>
-          <select
-            id={`stage-${stageIndex}-time`}
-            {...register(`stages.${stageIndex}.startTimeOfDay`)}
-            className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-          >
-            <option value="morning">Morning</option>
-            <option value="afternoon">Afternoon</option>
-            <option value="evening">Evening</option>
-            <option value="night">Night</option>
-          </select>
-        </div>
+        {stageIndex === 0 ? (
+          <div>
+            <label htmlFor={`stage-${stageIndex}-time`} className="block text-sm text-amber-200 mb-1">Departure Time *</label>
+            <select
+              id={`stage-${stageIndex}-time`}
+              {...register(`stages.${stageIndex}.startTimeOfDay`)}
+              className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500"
+            >
+              <option value="morning">Morning</option>
+              <option value="afternoon">Afternoon</option>
+              <option value="evening">Evening</option>
+              <option value="night">Night</option>
+            </select>
+          </div>
+        ) : (
+          <div className="bg-stone-800 rounded p-3 text-sm text-stone-300">
+            Departure time is determined automatically from the previous stage.
+          </div>
+        )}
 
         <div>
           <label htmlFor={`stage-${stageIndex}-distance`} className="block text-sm text-amber-200 mb-1">Distance (miles) *</label>
