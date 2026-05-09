@@ -36,8 +36,8 @@ export function computeArrival(
   travelHoursNeeded: number
 ): { dayIndex: number; slotHour: number } {
   const normalizedStart = normalizeDeparture(startDayIndex, startSlotHour);
-  let dayIdx = normalizedStart.dayIndex;
-  let slotHour = normalizedStart.slotHour;
+  const dayIdx = normalizedStart.dayIndex;
+  const slotHour = normalizedStart.slotHour;
 
   const availableToday = 8 - slotHour;
 
