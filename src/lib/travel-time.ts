@@ -75,12 +75,10 @@ export function normalizeDeparture(
 }
 
 /**
- * Compute the departure for the next stage given the arrival of the current one and
- * the next stage's declared startTimeOfDay.
+ * Compute the departure for the next stage from current stage arrival.
  *
- * - If arrived at Evening: camp overnight, depart next Morning (ignore declared time).
- * - If arrived earlier and declared time >= arrival: depart same day at declared time.
- * - If arrived earlier but declared time < arrival: camp overnight, depart next day at declared time.
+ * - If arrived at Evening: camp overnight, depart next Morning.
+ * - If arrived before Evening: depart immediately.
  */
 export function nextStageDeparture(
   arrivalDayIndex: number,

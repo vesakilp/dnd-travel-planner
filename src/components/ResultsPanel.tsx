@@ -74,13 +74,13 @@ export default function ResultsPanel({ result }: Props) {
             <div className="bg-stone-800 rounded p-3">
               <p className="text-stone-400">Stage Start</p>
               <p className="text-white font-semibold">
-                Day {stage.startDayNumber}, {stage.startTimeLabel.toLowerCase()}
+                Day {stage.startDayNumber}, {formatTimeLabel(stage.startTimeLabel)}
               </p>
             </div>
             <div className="bg-stone-800 rounded p-3">
               <p className="text-stone-400">Stage End</p>
               <p className="text-white font-semibold">
-                Day {stage.endDayNumber}, {stage.endTimeLabel?.toLowerCase()}
+                Day {stage.endDayNumber}, {formatTimeLabel(stage.endTimeLabel)}
               </p>
             </div>
             <div className="bg-stone-800 rounded p-3">
@@ -163,6 +163,10 @@ export default function ResultsPanel({ result }: Props) {
       ))}
     </section>
   );
+}
+
+function formatTimeLabel(timeLabel: string): string {
+  return timeLabel.toLowerCase();
 }
 
 function EncounterRollDisplay({ label, roll }: { label: string; roll: import("@/lib/types").EncounterRoll }) {

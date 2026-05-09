@@ -59,4 +59,25 @@ describe("generateJourney", () => {
     expect(result.stages[1].endDayNumber).toBe(1);
     expect(result.stages[1].endTimeLabel).toBe("Evening");
   });
+
+  it("moves next stage start to next morning after evening arrival", async () => {
+    const stage1 = { ...createStage(1, 24), startTimeOfDay: "evening" as const };
+    const stage2 = createStage(2, 12);
+    const result = await generateJourney(
+      {
+        characters: [baseCharacter],
+        stages: [stage1, stage2],
+      },
+      "calculate",
+      123
+    );
+
+    expect(result.stages[0].startDayNumber).toBe(2);
+    expect(result.stages[0].startTimeLabel).toBe("Morning");
+    expect(result.stages[0].endDayNumber).toBe(2);
+    expect(result.stages[0].endTimeLabel).toBe("Evening");
+
+    expect(result.stages[1].startDayNumber).toBe(3);
+    expect(result.stages[1].startTimeLabel).toBe("Morning");
+  });
 });

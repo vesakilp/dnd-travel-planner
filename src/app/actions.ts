@@ -43,7 +43,6 @@ export async function generateJourney(
   for (let index = 0; index < data.stages.length; index++) {
     const stage = data.stages[index];
     const stageNumber = index + 1;
-    const normalizedStage = { ...stage, stageNumber };
     const terrainMultiplier = getTerrainMultiplier(stage.terrain);
     const { effectiveMilesPerDay, warning } = getEffectiveMilesPerDay(
       stage.pace,
@@ -66,6 +65,13 @@ export async function generateJourney(
     const departure = normalizeDeparture(currentDayIndex, currentSlotHour);
     const startDayNumber = departure.dayIndex + 1;
     const startTimeLabel = slotHourToLabel(departure.slotHour);
+    const startTimeOfDay: import("@/lib/types").TimeOfDay =
+      startTimeLabel === "Morning"
+        ? "morning"
+        : startTimeLabel === "Afternoon"
+          ? "afternoon"
+          : "evening";
+    const normalizedStage = { ...stage, stageNumber, startTimeOfDay };
     const arrival = computeArrival(departure.dayIndex, departure.slotHour, travelHoursNeeded);
     const endDayNumber = arrival.dayIndex + 1;
     const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);

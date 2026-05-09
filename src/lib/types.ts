@@ -94,14 +94,14 @@ export interface StageResult {
   aiDebugLog?: AiDebugLog;
   /** Calendar date the stage ends on (formatted string or "Day N" when no start date). */
   endDate?: string;
-  /** 1-based journey day on which stage travel starts. */
+  /** 1-based journey day on which stage travel starts (e.g. 3 => "Day 3"). */
   startDayNumber: number;
-  /** Human-readable time of day when the stage starts: "Morning", "Afternoon", or "Evening". */
+  /** Human-readable stage start period: "Morning", "Afternoon", or "Evening". */
   startTimeLabel: string;
-  /** 1-based journey day on which stage travel ends. */
+  /** 1-based journey day on which stage travel ends (e.g. 4 => "Day 4"). */
   endDayNumber: number;
   /** Human-readable time of day when the stage ends: "Morning", "Afternoon", or "Evening". */
-  endTimeLabel?: string;
+  endTimeLabel: string;
 }
 
 export interface JourneyResult {
