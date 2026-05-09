@@ -106,7 +106,13 @@ export default function PlannerForm() {
   }
 
   function addStage() {
-    appendStage(DEFAULT_STAGE(stageFields.length + 1));
+    const currentStages = getValues("stages");
+    const previousStage = currentStages.at(-1);
+
+    appendStage({
+      ...DEFAULT_STAGE(currentStages.length + 1),
+      startLocation: previousStage?.endLocation ?? "",
+    });
   }
 
   function handleReturnJourney() {
@@ -141,16 +147,7 @@ export default function PlannerForm() {
         <PartySection register={register} control={control} errors={errors} />
 
         <div className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-xl font-bold text-amber-400">🧭 Journey Stages</h2>
-            <button
-              type="button"
-              onClick={addStage}
-              className="bg-amber-700 hover:bg-amber-600 text-white text-sm px-4 py-2 rounded transition-colors"
-            >
-              + Add Stage
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-amber-400">🧭 Journey Stages</h2>
 
           <div className="space-y-1">
             <label className="block text-sm text-amber-200">
@@ -175,6 +172,15 @@ export default function PlannerForm() {
               onRemove={() => removeStage(i)}
             />
           ))}
+          <div className="flex justify-start">
+            <button
+              type="button"
+              onClick={addStage}
+              className="bg-amber-700 hover:bg-amber-600 text-white text-sm px-4 py-2 rounded transition-colors"
+            >
+              + Add Stage
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
