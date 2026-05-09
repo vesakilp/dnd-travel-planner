@@ -128,8 +128,8 @@ export async function generateAiNarrative(
         max_tokens: MAX_TOKENS,
         temperature: TEMPERATURE,
       }),
-      // Abort after 10 s so a slow response doesn't stall the whole generation
-      signal: AbortSignal.timeout(10_000),
+      // Abort after 60 s so a slow response doesn't stall the whole generation
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (!response.ok) {
@@ -162,7 +162,7 @@ export async function generateAiNarrative(
     const isTimeout =
       err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
     const failureReason = isTimeout
-      ? "Request timed out after 10 seconds"
+      ? "Request timed out after 60 seconds"
       : `Network or parse error: ${err instanceof Error ? err.message : String(err)}`;
     return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason } };
   }
