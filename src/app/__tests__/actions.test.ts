@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateJourney } from "@/app/actions";
+import { generateJourney, suggestForgottenRealmsDistance } from "@/app/actions";
 
 const baseCharacter = {
   id: "hero-1",
@@ -79,5 +79,24 @@ describe("generateJourney", () => {
 
     expect(result.stages[1].startDayNumber).toBe(3);
     expect(result.stages[1].startTimeLabel).toBe("Morning");
+  });
+});
+
+describe("suggestForgottenRealmsDistance", () => {
+  it("returns a non-throwing fallback when OPENAI_API_KEY is missing", async () => {
+    const originalApiKey = process.env.OPENAI_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+
+    try {
+      const result = await suggestForgottenRealmsDistance("Neverwinter", "Waterdeep");
+      expect(result.distanceMiles).toBeNull();
+      expect(result.message).toContain("unavailable");
+    } finally {
+      if (originalApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = originalApiKey;
+      }
+    }
   });
 });

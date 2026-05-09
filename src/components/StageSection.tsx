@@ -1,8 +1,10 @@
 "use client";
 import { UseFormRegister, FieldErrors, Control, useWatch } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { PlannerFormData } from "@/lib/schema";
 import { TERRAIN_CONFIG } from "@/lib/terrain";
 import { VEHICLE_OPTIONS, milesPerDay } from "@/lib/vehicle-options";
+import { suggestForgottenRealmsDistance } from "@/app/actions";
 
 interface Props {
   stageIndex: number;
@@ -16,8 +18,46 @@ interface Props {
 export default function StageSection({ stageIndex, register, control, errors, canRemove, onRemove }: Props) {
   const stageErrors = errors.stages?.[stageIndex];
   const vehicle = useWatch({ control, name: `stages.${stageIndex}.vehicle` });
+  const startLocation = useWatch({ control, name: `stages.${stageIndex}.startLocation` });
+  const endLocation = useWatch({ control, name: `stages.${stageIndex}.endLocation` });
   const showSpeedOverride = vehicle === "land_vehicle" || vehicle === "waterborne";
   const availableVehicleOptions = showSpeedOverride ? VEHICLE_OPTIONS[vehicle] : [];
+  const [distanceHint, setDistanceHint] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const start = startLocation?.trim() ?? "";
+    const end = endLocation?.trim() ?? "";
+
+    if (!start || !end) {
+      const clearHintTimer = setTimeout(() => {
+        if (!cancelled) setDistanceHint(null);
+      }, 0);
+      return () => {
+        cancelled = true;
+        clearTimeout(clearHintTimer);
+      };
+    }
+
+    const timer = setTimeout(() => {
+      if (cancelled) return;
+      setDistanceHint("🔎 Searching Forgotten Realms distance...");
+      void suggestForgottenRealmsDistance(start, end)
+        .then((result) => {
+          if (cancelled) return;
+          setDistanceHint(`✨ ${result.message}`);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setDistanceHint("ℹ️ AI distance lookup failed. Keep using manual distance.");
+        });
+    }, 600);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [startLocation, endLocation]);
 
   return (
     <section aria-labelledby={`stage-${stageIndex + 1}-heading`} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
@@ -89,6 +129,7 @@ export default function StageSection({ stageIndex, register, control, errors, ca
             className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500"
             placeholder="24"
           />
+          {distanceHint && <p className="text-xs text-amber-300 mt-1">{distanceHint}</p>}
           {stageErrors?.distanceMiles && <p className="text-red-400 text-xs mt-1">{stageErrors.distanceMiles.message}</p>}
         </div>
 
