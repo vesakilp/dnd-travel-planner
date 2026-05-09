@@ -91,11 +91,18 @@ export async function generateAiNarrative(
 ): Promise<{ narrative: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return { narrative: null, debugLog: { apiKeyPresent: false, usedAi: false } };
+    return {
+      narrative: null,
+      debugLog: {
+        apiKeyPresent: false,
+        usedAi: false,
+        failureReason: "OPENAI_API_KEY environment variable is not set on the server",
+      },
+    };
   }
 
   const userPrompt = buildUserPrompt(stage, characters, encounter, endDateFormatted);
-  const baseDebugLog: Omit<AiDebugLog, "usedAi"> = {
+  const baseDebugLog: Omit<AiDebugLog, "usedAi" | "failureReason"> = {
     apiKeyPresent: true,
     model: MODEL,
     temperature: TEMPERATURE,
@@ -126,17 +133,37 @@ export async function generateAiNarrative(
     });
 
     if (!response.ok) {
-      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
+      let errorBody = "";
+      try {
+        errorBody = await response.text();
+      } catch {
+        // ignore — can't read body
+      }
+      const reason = errorBody
+        ? `HTTP ${response.status} ${response.statusText}: ${errorBody}`
+        : `HTTP ${response.status} ${response.statusText}`;
+      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason: reason } };
     }
 
     const data: OpenAiResponse = await response.json();
     const text = data.choices?.[0]?.message?.content?.trim();
     if (!text) {
-      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
+      return {
+        narrative: null,
+        debugLog: {
+          ...baseDebugLog,
+          usedAi: false,
+          failureReason: "OpenAI returned a successful response but the content was empty",
+        },
+      };
     }
     return { narrative: text, debugLog: { ...baseDebugLog, usedAi: true } };
-  } catch {
-    // Network error, timeout, or parse failure — fall back silently
-    return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
+  } catch (err) {
+    const isTimeout =
+      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+    const failureReason = isTimeout
+      ? "Request timed out after 10 seconds"
+      : `Network or parse error: ${err instanceof Error ? err.message : String(err)}`;
+    return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason } };
   }
 }

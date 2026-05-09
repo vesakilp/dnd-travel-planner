@@ -162,8 +162,7 @@ export default function ResultsPanel({ result }: Props) {
                     AI used: <span className={stage.aiDebugLog.usedAi ? "text-green-400" : "text-yellow-400"}>
                       {stage.aiDebugLog.usedAi ? "yes" : "no (template fallback)"}
                     </span>
-                  </span>
-                  {stage.aiDebugLog.model && (
+                  </span>                  {stage.aiDebugLog.model && (
                     <span className="bg-stone-800 rounded px-2 py-0.5">
                       model: <span className="text-stone-200">{stage.aiDebugLog.model}</span>
                     </span>
@@ -179,6 +178,12 @@ export default function ResultsPanel({ result }: Props) {
                     </span>
                   )}
                 </div>
+                {stage.aiDebugLog.failureReason && (
+                  <div className="bg-red-950/40 border border-red-800 rounded px-2 py-1.5 text-red-300">
+                    <span className="font-semibold">Reason AI was not used: </span>
+                    {stage.aiDebugLog.failureReason}
+                  </div>
+                )}
                 {stage.aiDebugLog.prompt && (
                   <div>
                     <p className="text-stone-500 mb-1 font-semibold">User prompt sent to OpenAI:</p>

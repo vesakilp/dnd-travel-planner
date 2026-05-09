@@ -72,6 +72,11 @@ export interface AiDebugLog {
   prompt?: string;
   /** True when the AI response was used; false when the template fallback was used instead. */
   usedAi: boolean;
+  /**
+   * Human-readable explanation of why AI was not used (only set when usedAi is false).
+   * Examples: missing API key, HTTP error details, timeout, empty response.
+   */
+  failureReason?: string;
 }
 
 export interface StageResult {
