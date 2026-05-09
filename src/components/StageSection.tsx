@@ -148,7 +148,7 @@ export default function StageSection({ stageIndex, register, control, errors, ca
         {showSpeedOverride && (
           <div>
             <label htmlFor={`stage-${stageIndex}-speed`} className="block text-sm text-amber-200 mb-1">
-              Vehicle *
+              Vehicle
             </label>
             <select
               id={`stage-${stageIndex}-speed`}
@@ -161,7 +161,7 @@ export default function StageSection({ stageIndex, register, control, errors, ca
                 Select a vehicle option
               </option>
               {availableVehicleOptions.map((option) => (
-                <option key={`${option.label}-${option.milesPerHour}`} value={option.milesPerHour}>
+                <option key={option.label} value={option.milesPerHour}>
                   {option.label} ({milesPerDay(option.milesPerHour)} mi/day)
                 </option>
               ))}
