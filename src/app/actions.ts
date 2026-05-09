@@ -20,6 +20,122 @@ import {
 
 export type GenerateMode = "calculate" | "narrative" | "challenges" | "all";
 
+interface OpenAiMessage {
+  role: "system" | "user" | "assistant";
+  content: string;
+}
+
+interface OpenAiResponse {
+  choices: Array<{ message: { content: string } }>;
+}
+
+interface DistanceResponsePayload {
+  known: boolean;
+  distanceMiles?: number;
+  reasoning?: string;
+}
+
+export interface DistanceSuggestionResult {
+  distanceMiles: number | null;
+  message: string;
+}
+
+const DISTANCE_MODEL = "gpt-4o-mini";
+const DISTANCE_SYSTEM_PROMPT = `You are a Forgotten Realms geography assistant.
+Given two locations, estimate overland travel distance in miles.
+Return strict JSON only in this exact shape:
+{"known":boolean,"distanceMiles":number|null,"reasoning":"string"}
+Rules:
+- Use lore knowledge of the Forgotten Realms.
+- If either location is unknown or ambiguous, set known=false and distanceMiles=null.
+- If known=true, distanceMiles must be a positive number.
+- Keep reasoning short (max 20 words).`;
+
+function tryParseDistancePayload(raw: string): DistanceResponsePayload | null {
+  const text = raw.trim();
+  const candidates = [text];
+  const objectMatch = text.match(/\{[\s\S]*\}/);
+  if (objectMatch) candidates.push(objectMatch[0]);
+
+  for (const candidate of candidates) {
+    try {
+      const parsed = JSON.parse(candidate) as DistanceResponsePayload;
+      if (typeof parsed.known !== "boolean") continue;
+      if (!parsed.known) return { known: false, reasoning: parsed.reasoning };
+      if (typeof parsed.distanceMiles !== "number" || !Number.isFinite(parsed.distanceMiles)) continue;
+      if (parsed.distanceMiles <= 0) continue;
+      return parsed;
+    } catch {
+      // ignore and try next candidate
+    }
+  }
+  return null;
+}
+
+export async function suggestForgottenRealmsDistance(
+  startLocationRaw: string,
+  endLocationRaw: string
+): Promise<DistanceSuggestionResult> {
+  const startLocation = startLocationRaw.trim();
+  const endLocation = endLocationRaw.trim();
+  if (!startLocation || !endLocation) {
+    return { distanceMiles: null, message: "Enter both locations to get an AI distance suggestion." };
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    return { distanceMiles: null, message: "AI distance suggestion unavailable (missing OPENAI_API_KEY)." };
+  }
+
+  const messages: OpenAiMessage[] = [
+    { role: "system", content: DISTANCE_SYSTEM_PROMPT },
+    { role: "user", content: `Start location: ${startLocation}\nEnd location: ${endLocation}` },
+  ];
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: DISTANCE_MODEL,
+        messages,
+        max_tokens: 120,
+        temperature: 0.2,
+      }),
+      signal: AbortSignal.timeout(20_000),
+    });
+
+    if (!response.ok) {
+      return { distanceMiles: null, message: "AI distance suggestion failed. Keep using manual distance." };
+    }
+
+    const data: OpenAiResponse = await response.json();
+    const rawText = data.choices?.[0]?.message?.content?.trim();
+    if (!rawText) {
+      return { distanceMiles: null, message: "AI could not provide a distance suggestion." };
+    }
+
+    const parsed = tryParseDistancePayload(rawText);
+    if (!parsed || !parsed.known || typeof parsed.distanceMiles !== "number") {
+      return {
+        distanceMiles: null,
+        message: "AI could not confidently recognize one or both locations.",
+      };
+    }
+
+    const rounded = Math.round(parsed.distanceMiles * 10) / 10;
+    return {
+      distanceMiles: rounded,
+      message: `AI suggests about ${rounded} miles.`,
+    };
+  } catch {
+    return { distanceMiles: null, message: "AI distance lookup timed out or failed. Keep using manual distance." };
+  }
+}
+
 export async function generateJourney(
   data: PlannerFormData,
   mode: GenerateMode,
