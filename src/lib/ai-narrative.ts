@@ -29,6 +29,7 @@ Sisällytä kertomukseen:
 - Kaikki vaiheen tapahtumat järjestyksessä: tauot, ateriat, leiriytyminen ja muut rutiinit
 - Satunnaisesti 0–2 yksityiskohtaa, joissa jokin puolueen hahmo havaitsee tai tekee jotain
 - Kohtaamisen kuvaus, jos sellainen on
+- Jos käyttäjä on antanut DM-muistiinpanoja (DM notes), sisällytä ne kertomukseen sellaisenaan tai lyhennettynä
 
 Sanaraja: enintään 100 sanaa. Jokainen kohtaaminen lisää sanarajan 25 sanalla.
 
