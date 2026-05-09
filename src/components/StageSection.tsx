@@ -2,6 +2,7 @@
 import { UseFormRegister, FieldErrors, Control, useWatch } from "react-hook-form";
 import { PlannerFormData } from "@/lib/schema";
 import { TERRAIN_CONFIG } from "@/lib/terrain";
+import { VEHICLE_OPTIONS, milesPerDay } from "@/lib/vehicle-options";
 
 interface Props {
   stageIndex: number;
@@ -16,6 +17,7 @@ export default function StageSection({ stageIndex, register, control, errors, ca
   const stageErrors = errors.stages?.[stageIndex];
   const vehicle = useWatch({ control, name: `stages.${stageIndex}.vehicle` });
   const showSpeedOverride = vehicle === "land_vehicle" || vehicle === "waterborne";
+  const availableVehicleOptions = showSpeedOverride ? VEHICLE_OPTIONS[vehicle] : [];
 
   return (
     <section aria-labelledby={`stage-${stageIndex + 1}-heading`} className="border border-stone-700 rounded-lg p-5 bg-stone-900/50 space-y-4">
@@ -146,17 +148,22 @@ export default function StageSection({ stageIndex, register, control, errors, ca
         {showSpeedOverride && (
           <div>
             <label htmlFor={`stage-${stageIndex}-speed`} className="block text-sm text-amber-200 mb-1">
-              Vehicle Speed Override (mi/hr)
+              Vehicle *
             </label>
-            <input
+            <select
               id={`stage-${stageIndex}-speed`}
-              type="number"
-              min={0.1}
-              step={0.1}
-              {...register(`stages.${stageIndex}.vehicleSpeedOverride`, { valueAsNumber: true })}
+              {...register(`stages.${stageIndex}.vehicleSpeedOverride`, {
+                setValueAs: (value) => (value === "" ? undefined : Number(value)),
+              })}
               className="w-full bg-stone-800 border border-stone-600 rounded px-3 py-2 text-white focus:outline-none focus:border-amber-500"
-              placeholder="e.g. 3"
-            />
+            >
+              <option value="">Select a vehicle option</option>
+              {availableVehicleOptions.map((option) => (
+                <option key={`${option.label}-${option.milesPerHour}`} value={option.milesPerHour}>
+                  {option.label} ({milesPerDay(option.milesPerHour)} mi/day)
+                </option>
+              ))}
+            </select>
           </div>
         )}
 

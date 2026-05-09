@@ -6,7 +6,7 @@ A production-ready Next.js 15 App Router application for Dungeon Masters to plan
 
 - **Party management** — Add up to any number of adventurers with name, species, class, and level
 - **Flexible journey planning** — Start with one stage, then add more as needed, each with its own terrain, pace, season, vehicle, and distance
-- **Travel calculation** — Computes effective miles/day with terrain multipliers and vehicle overrides
+- **Travel calculation** — Computes effective miles/day with terrain multipliers and preset vehicle options
 - **Rations tracking** — Per-character and total ration counts per stage and grand total
 - **Random encounters** — d20 day and night encounter checks with monster lookup tables (d12)
 - **Narrative generation** — Evocative scene-setting text with DM prompts for each stage
@@ -85,8 +85,8 @@ const triggered = roll >= 17;
 | Ration rounding | Ceiling (partial days = full ration) |
 | Encounter trigger | d20 ≥ 17 |
 | Encounter table | d12 (day and night separate tables) |
-| Vehicle speed | miles/hr × 8 hours = miles/day |
-| Waterborne default | Falls back to normal overland if no speed given |
+| Vehicle speed | Selected vehicle option speed (mi/hr) × 8 hours = miles/day |
+| Vehicle options | Sword Coast-style presets for land and water travel |
 
 ## Tech Stack
 
