@@ -21,15 +21,18 @@ interface OpenAiResponse {
 
 const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.85;
-const MAX_TOKENS = 700;
+const MAX_TOKENS = 250;
 
-const SYSTEM_PROMPT = `Olet Dungeons & Dragons 5. painoksen kampanjoiden mestari-tarinankertoja, joka kertoo tarinoita Unohdettujen Valtakuntien (Faerûn) maailmassa. Kirjoitat atmosfäärisiä, mukaansatempaavia matkakertomuksia dungeon masterille luettavaksi tai muokattavaksi. Kirjoitustyylisi on eläväinen ja maanläheinen — herätteleviä yksityiskohtia säästä, maisemasta, äänistä ja tuoksuista sekä hahmokohtaisia hetkiä, jotka paljastavat persoonallisuuden toiminnan kautta. Pidä kertomus 3–5 kappaleessa. Sisällytä:
-- Vuodenaikaan ja maastoon sopivat sääolosuhteet
-- Tietty maisemayksityiskohta tai reittikohtainen tapahtuma
-- Hetki, joka nostaa esiin yhden tai kaksi hahmoa (heidän luokkansa/rotunsa perusteella)
-- Lyhyt leirikohtaus, joka kuvaa iltaa, ateriaa ja vahtivuoroa
+const SYSTEM_PROMPT = `Olet D&D 5e -kampanjan matkakertomuksen kirjoittaja. Kirjoitat lyhyitä, asiallisia matkakuvauksia dungeon masterille. Tyylisi on objektiivinen ja minimalistinen — älä käytä elävää kieltä äläkä kuvaa tunteita. Pidä kertomus yleisellä tasolla.
+
+Sisällytä kertomukseen:
+- Kaikki vaiheen tapahtumat järjestyksessä: tauot, ateriat, leiriytyminen ja muut rutiinit
+- Satunnaisesti 0–2 yksityiskohtaa, joissa jokin puolueen hahmo havaitsee tai tekee jotain
 - Kohtaamisen kuvaus, jos sellainen on
-Älä käytä markdown-otsikoita. Käytä selkeää, romaanityylinen proosatyyli. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
+
+Sanaraja: enintään 100 sanaa. Jokainen kohtaaminen lisää sanarajan 25 sanalla.
+
+Älä käytä markdown-otsikoita. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
 
 function buildUserPrompt(
   stage: StageInput,
