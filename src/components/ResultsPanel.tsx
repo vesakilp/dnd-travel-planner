@@ -145,6 +145,56 @@ export default function ResultsPanel({ result }: Props) {
               <div className="text-stone-200 text-sm whitespace-pre-wrap">{stage.narrative}</div>
             </div>
           )}
+
+          {stage.aiDebugLog && (
+            <details className="bg-stone-900 border border-stone-700 rounded p-3 text-xs text-stone-400">
+              <summary className="cursor-pointer font-semibold text-stone-300 select-none">
+                🤖 OpenAI Debug Log
+              </summary>
+              <div className="mt-3 space-y-2">
+                <div className="flex gap-2 flex-wrap">
+                  <span className="bg-stone-800 rounded px-2 py-0.5">
+                    API key: <span className={stage.aiDebugLog.apiKeyPresent ? "text-green-400" : "text-red-400"}>
+                      {stage.aiDebugLog.apiKeyPresent ? "present" : "missing"}
+                    </span>
+                  </span>
+                  <span className="bg-stone-800 rounded px-2 py-0.5">
+                    AI used: <span className={stage.aiDebugLog.usedAi ? "text-green-400" : "text-yellow-400"}>
+                      {stage.aiDebugLog.usedAi ? "yes" : "no (template fallback)"}
+                    </span>
+                  </span>                  {stage.aiDebugLog.model && (
+                    <span className="bg-stone-800 rounded px-2 py-0.5">
+                      model: <span className="text-stone-200">{stage.aiDebugLog.model}</span>
+                    </span>
+                  )}
+                  {stage.aiDebugLog.temperature !== undefined && (
+                    <span className="bg-stone-800 rounded px-2 py-0.5">
+                      temperature: <span className="text-stone-200">{stage.aiDebugLog.temperature}</span>
+                    </span>
+                  )}
+                  {stage.aiDebugLog.maxTokens !== undefined && (
+                    <span className="bg-stone-800 rounded px-2 py-0.5">
+                      max_tokens: <span className="text-stone-200">{stage.aiDebugLog.maxTokens}</span>
+                    </span>
+                  )}
+                </div>
+                {stage.aiDebugLog.failureReason && (
+                  <div className="bg-red-950/40 border border-red-800 rounded px-2 py-1.5 text-red-300">
+                    <span className="font-semibold">Reason AI was not used: </span>
+                    {stage.aiDebugLog.failureReason}
+                  </div>
+                )}
+                {stage.aiDebugLog.prompt && (
+                  <div>
+                    <p className="text-stone-500 mb-1 font-semibold">User prompt sent to OpenAI:</p>
+                    <pre className="bg-stone-800 rounded p-2 whitespace-pre-wrap text-stone-300 leading-relaxed">
+                      {stage.aiDebugLog.prompt}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </details>
+          )}
         </div>
       ))}
     </section>

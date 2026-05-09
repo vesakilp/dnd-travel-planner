@@ -8,7 +8,7 @@
  * in Node.js 18+ and Next.js server actions.
  */
 
-import { Character, StageInput, EncounterResult } from "./types";
+import { Character, StageInput, EncounterResult, AiDebugLog } from "./types";
 
 interface OpenAiMessage {
   role: "system" | "user" | "assistant";
@@ -19,13 +19,21 @@ interface OpenAiResponse {
   choices: Array<{ message: { content: string } }>;
 }
 
-const SYSTEM_PROMPT = `Olet Dungeons & Dragons 5. painoksen kampanjoiden mestari-tarinankertoja, joka kertoo tarinoita Unohdettujen Valtakuntien (Faerûn) maailmassa. Kirjoitat atmosfäärisiä, mukaansatempaavia matkakertomuksia dungeon masterille luettavaksi tai muokattavaksi. Kirjoitustyylisi on eläväinen ja maanläheinen — herätteleviä yksityiskohtia säästä, maisemasta, äänistä ja tuoksuista sekä hahmokohtaisia hetkiä, jotka paljastavat persoonallisuuden toiminnan kautta. Pidä kertomus 3–5 kappaleessa. Sisällytä:
-- Vuodenaikaan ja maastoon sopivat sääolosuhteet
-- Tietty maisemayksityiskohta tai reittikohtainen tapahtuma
-- Hetki, joka nostaa esiin yhden tai kaksi hahmoa (heidän luokkansa/rotunsa perusteella)
-- Lyhyt leirikohtaus, joka kuvaa iltaa, ateriaa ja vahtivuoroa
+const MODEL = "gpt-4o-mini";
+const TEMPERATURE = 0.85;
+const MAX_TOKENS = 250;
+
+const SYSTEM_PROMPT = `Olet D&D 5e -kampanjan matkakertomuksen kirjoittaja. Kirjoitat lyhyitä, asiallisia matkakuvauksia dungeon masterille. Tyylisi on objektiivinen ja minimalistinen — älä käytä elävää kieltä äläkä kuvaa tunteita. Pidä kertomus yleisellä tasolla.
+
+Sisällytä kertomukseen:
+- Kaikki vaiheen tapahtumat järjestyksessä: tauot, ateriat, leiriytyminen ja muut rutiinit
+- Satunnaisesti 0–2 yksityiskohtaa, joissa jokin puolueen hahmo havaitsee tai tekee jotain
 - Kohtaamisen kuvaus, jos sellainen on
-Älä käytä markdown-otsikoita. Käytä selkeää, romaanityylinen proosatyyli. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
+- Jos käyttäjä on antanut DM-muistiinpanoja (DM notes), sisällytä ne kertomukseen sellaisenaan tai lyhennettynä
+
+Sanaraja: enintään 100 sanaa. Jokainen kohtaaminen lisää sanarajan 25 sanalla.
+
+Älä käytä markdown-otsikoita. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
 
 function buildUserPrompt(
   stage: StageInput,
@@ -77,20 +85,38 @@ function buildUserPrompt(
 
 /**
  * Attempt to generate a narrative via the OpenAI API.
- * Returns null if OPENAI_API_KEY is not set or the request fails.
+ * Always returns a debug log alongside the (possibly null) narrative.
  */
 export async function generateAiNarrative(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
   endDateFormatted?: string
-): Promise<string | null> {
+): Promise<{ narrative: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    return {
+      narrative: null,
+      debugLog: {
+        apiKeyPresent: false,
+        usedAi: false,
+        failureReason: "OPENAI_API_KEY environment variable is not set on the server",
+      },
+    };
+  }
+
+  const userPrompt = buildUserPrompt(stage, characters, encounter, endDateFormatted);
+  const baseDebugLog: Omit<AiDebugLog, "usedAi" | "failureReason"> = {
+    apiKeyPresent: true,
+    model: MODEL,
+    temperature: TEMPERATURE,
+    maxTokens: MAX_TOKENS,
+    prompt: userPrompt,
+  };
 
   const messages: OpenAiMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
-    { role: "user",   content: buildUserPrompt(stage, characters, encounter, endDateFormatted) },
+    { role: "user",   content: userPrompt },
   ];
 
   try {
@@ -101,22 +127,47 @@ export async function generateAiNarrative(
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: MODEL,
         messages,
-        max_tokens: 700,
-        temperature: 0.85,
+        max_tokens: MAX_TOKENS,
+        temperature: TEMPERATURE,
       }),
-      // Abort after 10 s so a slow response doesn't stall the whole generation
-      signal: AbortSignal.timeout(10_000),
+      // Abort after 60 s so a slow response doesn't stall the whole generation
+      signal: AbortSignal.timeout(60_000),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      let errorBody = "";
+      try {
+        errorBody = await response.text();
+      } catch {
+        // ignore — can't read body
+      }
+      const reason = errorBody
+        ? `HTTP ${response.status} ${response.statusText}: ${errorBody}`
+        : `HTTP ${response.status} ${response.statusText}`;
+      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason: reason } };
+    }
 
     const data: OpenAiResponse = await response.json();
     const text = data.choices?.[0]?.message?.content?.trim();
-    return text || null;
-  } catch {
-    // Network error, timeout, or parse failure — fall back silently
-    return null;
+    if (!text) {
+      return {
+        narrative: null,
+        debugLog: {
+          ...baseDebugLog,
+          usedAi: false,
+          failureReason: "OpenAI returned a successful response but the content was empty",
+        },
+      };
+    }
+    return { narrative: text, debugLog: { ...baseDebugLog, usedAi: true } };
+  } catch (err) {
+    const isTimeout =
+      err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
+    const failureReason = isTimeout
+      ? "Request timed out after 60 seconds"
+      : `Network or parse error: ${err instanceof Error ? err.message : String(err)}`;
+    return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason } };
   }
 }
