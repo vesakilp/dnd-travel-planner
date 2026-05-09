@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   parseDrString,
   toDrString,
@@ -29,12 +29,21 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
     harptosDateToString(initialYear, initialDoy)
   );
 
+  // Refs mirror the latest typed values so onBlur always sees the
+  // most recent input regardless of React's async state batching.
+  const latestYearRef = useRef(String(initialYear));
+  const latestDoyRef  = useRef(String(initialDoy));
+
   // Sync when the prop changes from outside (e.g. journey advance)
   useEffect(() => {
     const p = parseDrString(value);
     if (!p) return;
-    setYearStr(String(p.year));
-    setDoyStr(String(p.dayOfYear));
+    const ys = String(p.year);
+    const ds = String(p.dayOfYear);
+    setYearStr(ys);
+    setDoyStr(ds);
+    latestYearRef.current = ys;
+    latestDoyRef.current  = ds;
     setDisplayDate(harptosDateToString(p.year, p.dayOfYear));
   }, [value]);
 
@@ -58,8 +67,8 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
             aria-label="Year (Dale Reckoning)"
             value={yearStr}
             min={1}
-            onChange={(e) => setYearStr(e.target.value)}
-            onBlur={(e) => commit(e.target.value, doyStr)}
+            onChange={(e) => { setYearStr(e.target.value); latestYearRef.current = e.target.value; }}
+            onBlur={() => commit(latestYearRef.current, latestDoyRef.current)}
             className="w-24 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
           />
         </div>
@@ -73,8 +82,8 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
             value={doyStr}
             min={1}
             max={daysInYear(parseInt(yearStr) || 1491)}
-            onChange={(e) => setDoyStr(e.target.value)}
-            onBlur={(e) => commit(yearStr, e.target.value)}
+            onChange={(e) => { setDoyStr(e.target.value); latestDoyRef.current = e.target.value; }}
+            onBlur={() => commit(latestYearRef.current, latestDoyRef.current)}
             className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
           />
         </div>
