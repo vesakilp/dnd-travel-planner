@@ -1,175 +1,175 @@
 import { Character, StageInput, EncounterResult } from "./types";
 
-// ─── Säätaulukot (vuodenaika × maasto) ────────────────────────────────────────
+// ─── Weather tables ────────────────────────────────────────────────────────────
 
 const WEATHER_BY_SEASON_TERRAIN: Record<string, Record<string, string[]>> = {
   winter: {
-    arctic:    ["Raivoava lumimyrsky raastaa jokaisen paljaaksi jääneen ihon palaseksi.", "Lumiaan hiljaisuus peittää erämaan; jokainen hengenveto höyryää jäisessä ilmassa.", "Jäinen sumu laskeutuu, heikentäen näkyvyyden tuskin kymmenen jalan päähän."],
-    forest:    ["Lumisalvaiset oksat pudottelevat taakkansa pehmeillä tömähdyksillä, säikäyttäen seurueen.", "Jäätynyt aluskasvillisuus murinee askelparin alla ilmoittaen jokaisen askeleen.", "Polun päällä on ohut jääkuori, joka tekee etenemisestä tukalan vaarallista."],
-    grassland: ["Harmaat pilvet painuvat alas; kitkerä tuuli peltaa viimeiset kuolleet ruohot jäisestä maasta.", "Räntä sihailee viittoja ja rinkoja vasten, kastelee kaiken läpikotaisin.", "Kinokset ovat paikoin peittäneet tien; suunnistaminen on arvauspeli."],
-    mountain:  ["Myrskyntuulet uhkaavat repiä matkustajat paljaalta harjanteelta.", "Jääpuikot miekan kokoisia riippuvat jokaisesta ulkonemasta.", "Tuore lumisade on pyyhkinyt polun kokonaan."],
-    hill:      ["Pakastava sumu takertuu kukkulanlaelle koko aamun ennen kuin se harvenee harmaaksi sumuverhodeksi.", "Pikimusta jää väijyy alasrinteillä.", "Tuuli voivottaa paljaiden orjantappurapensaiden välissä kaukaisena pillisoittona."],
-    coast:     ["Merivesisuihku jäätyy jokaiselle pinnalle; suolainentuuli purree syvälle.", "Myrskynharmaat aallot paukuttavat rantaa; pauhina on lakkaamatonta.", "Yön aikana vuorovesialtaisiin on muodostunut jääkerros."],
-    swamp:     ["Jäälevyt naljuttavat uhkaavasti suo-ojien päällä.", "Jäätyneet järvikaislat rapisevat tuulessa kuin luurankosormet.", "Usva leijuu matalana jäätyneen suon yläpuolella aamuisessa kylmyydessä."],
-    desert:    ["Yöt olivat melkein jäätäviä; keskipäivällä palaa ohut lämpö, mutta ei koskaan tarpeeksi.", "Terävä, kuiva tuuli hankaa dyynejä, kasaten hiekkaa jokaista kiveä vasten.", "Taivas on haaleaa, talvista sinistä — kaunista ja täysin armotonta."],
-    underdark: ["Kylmyys tihkuu kivistä; tiputus putoaa katosta hitaassa, rytmisessä tahtina.", "Maanalaiset ilmavirtaukset kantavat syvän jään hajua.", "Lämpötila on vakaa mutta aina kylmä, muistutus siitä, kuinka kaukana alla maailma on."],
-    urban:     ["Huurrekukat kukkivat jokaisella ikkunaruudulla; noppakivet ovat tappavan liukkaita.", "Ohut lumikerros peittää kattoja; savu nousee sadoista savupiipuista.", "Katukauppiaat tömisttelevät jalkojaan ja vetävät huivejaan tiukemmalle."],
-    waterborne:["Räntä pärskyttää kannella; jokainen köysi on jäykistynyt jäästä.", "Talvinen myrsky pakottaa miehistön laskemaan purjeet ja ratsastamaan sen läpi.", "Sumu on niin tiheää, että rannikko on kadonnut; vain kompassi antaa suunnan."],
-    default:   ["Kylmyys on armoton, laskeutuen niveliin ja hidastaen jokaista askelta.", "Harmaa, talvinen taivas ei tarjoa lämpöä edes keskipäivällä.", "Tuuli löytää jokaisen aukon viitasta ja haarniskasta."],
+    arctic:    ["A howling blizzard claws at every inch of exposed skin.", "Bone-white silence cloaks the wastes; each breath steams in the frozen air.", "Ice fog rolls in, reducing visibility to a dozen feet."],
+    forest:    ["Snow-laden branches shed their loads with soft thuds, startling the party.", "Frozen undergrowth crunches underfoot, announcing every step.", "A thin crust of ice on the trail makes footing treacherous."],
+    grassland: ["Grey skies press low; a bitter wind strips the last dead grass from the frozen earth.", "Sleet hisses against cloaks and packs, soaking everything through.", "Snowdrifts have buried the road in places; navigation is guesswork."],
+    mountain:  ["Gale-force winds threaten to peel travelers from the exposed ridgeline.", "Icicles the size of swords hang from every overhang.", "A fresh snowfall has erased the trail entirely."],
+    hill:      ["Freezing fog clings to the hilltops all morning before thinning to a grey haze.", "Patches of black ice lurk on the downhill slopes.", "The wind moans between the bare thorn-bushes like distant pipe-song."],
+    coast:     ["Sea-spray freezes on every surface; the salt wind bites deep.", "Storm-grey waves hammer the shore; the roar is ceaseless.", "A skin of ice has formed in the tide-pools overnight."],
+    swamp:     ["Ice sheets creak ominously over the boggy channels.", "Frozen reeds rattle in the wind like skeletal fingers.", "Mist hangs low over the ice-locked marsh in the morning cold."],
+    desert:    ["Nights were near-freezing; by midday a thin warmth returns but never quite enough.", "A sharp, dry wind scours the dunes, piling sand against every rock.", "The sky is a pale, wintry blue — beautiful and utterly merciless."],
+    underdark: ["Cold seeps from the stone; condensation drips from the ceiling in slow, rhythmic taps.", "Subterranean drafts carry the smell of deep ice.", "The temperature is stable but always cold, a reminder of how far below the world lies."],
+    urban:     ["Frost flowers bloom on every window pane; the cobblestones are treacherous.", "A thin snow dusts the rooftops; smoke rises from a hundred chimneys.", "Street vendors stamp their feet and pull their scarves tighter."],
+    waterborne:["Sleet patters on the deck; every rope is stiff with ice.", "A winter squall forces the crew to furl the sails and ride it out.", "Fog is so thick the shore has vanished; only the compass gives direction."],
+    default:   ["The cold is relentless, settling into joints and slowing every step.", "A grey, wintry sky offers no warmth even at midday.", "Wind finds every gap in cloak and armour alike."],
   },
   spring: {
-    arctic:    ["Lyhyt sulaminen on muuttanut jään vaaralliseksi sohjoksi.", "Sulamisvedet tulvivat jokaista matalaa polkua; seurue kastelee enemmän kuin kävelee.", "Lumi takertuu yhä pohjoisenpuoleisille rinteille, mutta aurinko pysyy pidempään."],
-    forest:    ["Metsä elää lintujen laulusta ja lumisulannasta korkeista oksista tippuvasta vedestä.", "Vaaleita vihreitä versoja nousee viime vuoden lehtikarikkeesta.", "Kuurosat saapuvat varoittamatta, muuttaen polun mudaksi minuuteissa."],
-    grassland: ["Villokukat alkavat kirjoa niittyjä keltaisella ja violetilla.", "Arvaamaton kevätkuuro kastaa seurueen, ohittaa sitten minuuteissa.", "Lämmin eteläntuuli kantaa uuden maan tuoksua."],
-    mountain:  ["Lumisulanto valuu jokaista uomaa pitkin, muuttaen tyynit purot kuohuviksi virroiksi.", "Ilma on korkealla kirkasta ja kylmää, kantaen männyn ja sateen tuoksua.", "Kirkkaan auringonvalon pilkut vuorottelevat juoksevien pilvivarjojen kanssa rinteillä."],
-    hill:      ["Kukkulat ovat vihreitä ja märkiä; jokainen huippu tarjoaa laajan, pilvienviihtymän maiseman.", "Leikkisä tuuli pitää taivaan liikkeessä, ei anna pilvien asettua pitkäksi aikaa.", "Tuore muta tarttuu saappaisiin ja nilkkoihin puolipäivään mennessä."],
-    coast:     ["Kevään vuorovesi on korkealla; seurueen täytyy ajoittaa rantaylityksensä huolellisesti.", "Merikotkia kieppuu päällä häntivien valkoisten pilvien vasten.", "Ilma maistuu suolalle, sateelle ja uudelle kasvulle kaikki yhdessä."],
-    swamp:     ["Suo on täynnä sulamisvettä; jokainen askel uhkaa upota polveen saakka.", "Sammakot aloittavat valtavan kuoron näkymättömistä lammista.", "Keväthukat kukivat hämmästyttävän kirkkaana tummaa vettä vasten."],
-    desert:    ["Lyhyt aavikokeväinen maalaa hiekat pienillä, epätodennäköisillä kukilla.", "Lämpimät päivät jo; seurue lähtee ennen auringonnousua välttääkseen pahimman helteen.", "Kuiva, mausteinen tuuli pyörittää dyynejä."],
-    underdark: ["Kevätsateet yläpuolella ovat lisänneet veden tippumista luolakattojen läpi.", "Maanalaiset virrat juoksevat nopeina ja samean pinnan sedimentistä.", "Kalpeat sienet tuottavat muhkeat sienet ekstaattisin rykelmin."],
-    urban:     ["Kaupunki on meluisa kevätjuhlista; köynnökset roikkuvat räystäiden välissä.", "Markkinapäivä on muuttanut jokaisen kadun stallien esteeksi.", "Lämmin iltapäiväsade lähettää kauppiaat hämmästyttämään markiisejensa alle."],
-    waterborne:["Tuoreet kevääntuulet täyttävät purjeet; matka on nopea mutta puuskuttava.", "Lyhyt myrsky vyöryy läpi ja on kadonnut ennen kuin kukaan ehtii huolestua.", "Meri on vihreää ja aaltoilevaa, hyppivistä kaloista elävä."],
-    default:   ["Arvaamaton keväinen päivä: lämmin aurinko, sitten kylmä suihku, sitten aurinko taas.", "Muta on jokaisen askeleen seuralainen.", "Maailma tuntuu uudelta ja levottomalta."],
+    arctic:    ["A brief thaw has turned the ice to treacherous slush.", "Meltwater floods every low path; the party wades more than walks.", "Snow still clings to the north-facing slopes, but the sun stays up longer now."],
+    forest:    ["The forest is alive with birdsong and the drip of snowmelt from high branches.", "Pale green shoots push through last year's leaf-litter.", "Showers arrive without warning, turning the track to mud in minutes."],
+    grassland: ["Wildflowers are beginning to pepper the meadows with yellow and violet.", "An unpredictable spring shower drenches the party, then passes in minutes.", "A warm south breeze carries the smell of new earth."],
+    mountain:  ["Snowmelt cascades down every gully, turning calm streams to churning torrents.", "The air is clear and cold at altitude, carrying the scent of pine and rain.", "Patches of brilliant sunlight alternate with racing cloud-shadow on the slopes."],
+    hill:      ["The hills are green and soggy; each summit offers a wide, cloud-swept view.", "A playful wind keeps the sky moving, never letting clouds settle long.", "Fresh mud clings to boots and ankles by midday."],
+    coast:     ["Spring tides run high; the party must time their beach crossing carefully.", "Sea-eagles wheel overhead against scudding white clouds.", "The air tastes of salt and rain and new growth all at once."],
+    swamp:     ["The marsh is brimming with snowmelt; every step risks sinking to the knee.", "Frogs set up an enormous chorus from invisible pools.", "Spring flowers bloom startlingly bright against the dark water."],
+    desert:    ["A brief desert spring paints the sands with tiny, improbable blooms.", "Warm days already; the party sets out before sunrise to avoid the worst heat.", "A dry, spice-scented wind rolls over the dunes."],
+    underdark: ["Spring rains above have increased the drip of water through the cave ceilings.", "Underground streams run fast and murky with surface sediment.", "Pale fungi are fruiting in extravagant clusters."],
+    urban:     ["The city is noisy with spring festivals; garlands hang between the eaves.", "Market-day has turned every street into an obstacle course of stalls.", "Warm afternoon rain sends hawkers scrambling for awnings."],
+    waterborne:["Fresh spring winds fill the sails; the voyage is swift but gusty.", "A brief squall rolls through and is gone before anyone has time to worry.", "The sea is green and choppy, alive with leaping fish."],
+    default:   ["An unpredictable spring day: warm sun, then a cold shower, then sun again.", "Mud is the companion of every step.", "The world feels new and restless."],
   },
   summer: {
-    arctic:    ["Täälläkin aurinko tuskin laskee; jatkuva valo on desorientoivaa.", "Ikiroudan pinta on pehmentynyt muutaman tuuman mudaksi.", "Parvet pisteleviä hyönteisiä parveilee soilta."],
-    forest:    ["Latvusto on paksua ja vihreää, loukkuun sulkien lämpöä ja kosteutta kuin viitta.", "Kaukainen ukkonen jyrisee iltapäivällä, mutta sade ei koskaan oikein saavu.", "Kultaiset valonsäteet löytävät aukkoja lehdistä, pistelemällä polkua."],
-    grassland: ["Aurinko hakkaa alas pilveettömästä taivaasta; ruoho on jo kellastumassa.", "Kuuma, välkkyvä auringonheijastus hämärtää horisontin aamupuolella.", "Hyönteiset surisevat taukoamatta korkeassa ruohossa molemmin puolin."],
-    mountain:  ["Korkeusilma on armollisen viileämpää; helpotus jalan alaisten lounaiden jälkeen.", "Iltapäivän ukkoset rakentuvat huippujen yläpuolelle ja purkautuvat näyttävästi illalla.", "Kiviliskot ottavat aurinkoa jokaisella kivellä."],
-    hill:      ["Kukkulan huippu antaa laajan näkymän loistavaan kesätaivaaseen.", "Lempeä tuulenpuuska pitää helteen hallittavana; ruoho tuoksuu ihastuttavalta.", "Kaukaiset heinäpellot täyttävät ilman hunajaisella lämmöllä."],
-    coast:     ["Merituuli pitää helteen miellyttävänä rannan lähellä.", "Vesi on houkuttelevaa akvamariinia; kahlaaminen kiusaa, mutta aika on vähissä.", "Lokit väittelevät raikkaasti jotain vuorovesirantoja pitkin."],
-    swamp:     ["Suo kesällä on julma: kuumuus, kosteus ja täyteläinen hyönteisverho.", "Vesi on muuttunut seisovaksi ja vihreäksi; haju on muistettava.", "Sammakot ja linnut kilpailevat ollakseen maailman äänekäs."],
-    desert:    ["Kuumuus on fyysinen läsnäolo painuen ylhäältä alas ja säteillen alhaalta ylös.", "Varjokaan ei tarjoa juuri helpotusta; ilma itsessään tuntuu polttavan keuhkoja.", "Seurue lepää brutaalit puolipäivän tunnit ja matkustaa aamunkoitteessa ja hämärässä."],
-    underdark: ["Maanalainen tarjoaa siunatun viileytensä; helpotus pintakuumuuden jälkeen.", "Bioluminesoivat sammalet hehkuvat himmeästi syvemmissä käytävissä.", "Sokeat kalat loiskivat maanalaisissa lammissa."],
-    urban:     ["Kaupunki paistuu; pöly nousee pakkaiselta aukiolta.", "Ruuan tuoksu jokaisesta tavernaikkunasta on häiritsevästi hyvä.", "Lapset huutavat suihkulähteiden aukioilla vanhempiensa katsoessa."],
-    waterborne:["Tasainen pasaatituuli täyttää purjeen; matka on sileää ja lämmintä.", "Lentävät kalat hyppivät rungon vierellä pitkänä kesäiltapäivänä.", "Meri on syvänsinistä ja melkein lasinen illalla."],
-    default:   ["Aurinko on armoton ja pöly on paksua.", "Kuumuus roikkuu kaiken yläpuolella kuin lämmin peitto, jota kukaan ei pyytänyt.", "Jopa varjot ovat lämpimiä tänään."],
+    arctic:    ["Even here the sun barely sets; the constant light is disorienting.", "The permafrost has softened the top few inches of ground to mud.", "Clouds of biting insects swarm from the boggy flats."],
+    forest:    ["The canopy is thick and green, trapping heat and humidity like a cloak.", "Distant thunder rumbles through the afternoon but the rain never quite arrives.", "Shafts of golden light find gaps in the leaves, dappling the trail."],
+    grassland: ["The sun hammers down from a cloudless sky; the grass is already yellowing.", "A hot, shimmering haze blurs the horizon by mid-morning.", "Heat-insects drone ceaselessly in the tall grass on either side."],
+    mountain:  ["The air at altitude is mercifully cooler; a relief after the foothills.", "Afternoon thunderheads build over the peaks and break spectacularly by evening.", "Rock lizards sun themselves on every boulder."],
+    hill:      ["The hilltop gives a wide view under a brilliant summer sky.", "A gentle breeze keeps the heat manageable; the grass smells wonderful.", "Distant hayfields perfume the air with a honey-sweet warmth."],
+    coast:     ["Sea-breeze keeps the heat pleasant near the shore.", "The water is an inviting aquamarine; wading is tempting but time is short.", "Gulls argue raucously over something on the tideline."],
+    swamp:     ["The swamp in summer is brutal: heat, humidity, and a solid curtain of insects.", "The water has gone stagnant and green; the smell is memorable.", "Frogs and birds compete to be the loudest thing in the world."],
+    desert:    ["The heat is a physical presence pressing down from above and radiating up from below.", "Even shade offers little relief; the air itself seems to scorch the lungs.", "The party rests through the brutal midday hours and travels at dawn and dusk."],
+    underdark: ["The underground offers blessed coolness; a relief after the surface heat.", "Bioluminescent mosses glow faintly in the deeper passages.", "Blind fish splash in underground pools."],
+    urban:     ["The city bakes; dust rises from the packed-earth plazas.", "The smell of food from every tavern window is distractingly good.", "Children run shrieking through fountain-squares while their parents look on."],
+    waterborne:["A steady trade wind fills the sail; the voyage is smooth and warm.", "Flying fish leap alongside the hull in the long summer afternoon.", "The sea is deep blue and almost glassy near evening."],
+    default:   ["The sun is merciless and the dust is thick.", "Heat hangs over everything like a warm blanket nobody asked for.", "Even the shadows are warm today."],
   },
   fall: {
-    arctic:    ["Vuoden ensimmäinen vakava lumimyrsky pyyhkäisee pohjoisesta.", "Jää uudistuu tyynissä lammissa yöllä; aamut räsähtävät jalkojen alla.", "Tundra on muuttunut harmaaksi ja ruskeaksi; talvi valtaa takaisin alueensa."],
-    forest:    ["Latvusto leimahtaa meripihkaan, karmiiniin ja kultaan; jokainen puuska tuo lehtisateen.", "Metsän lattia on pehmeä, kostea vaippa langenneista lehdistä.", "Aamuinen usva takertuu matalaan maastoon puolipäivään saakka."],
-    grassland: ["Viima viilentää tuulta; taivas on rikas syyssininen.", "Pitkä kultainen ruoho taipuu aalloissa jokaisen puuskan edessä.", "Muuttavat linnut täyttävät taivaan pitkissä, toopottavissa jonoissa."],
-    mountain:  ["Ensimmäinen lumipöly on ilmestynyt korkeimmille huipuille.", "Kylmä, kristallinen ilma tekee jokaisesta kaukodiikestä partateräväksi.", "Kalliosvyt ovat yleisempiä kun pakkanen halkoo kalliokasvoja."],
-    hill:      ["Sananjalkaiset ovat syvän pronssin värisiä; kukkulanrinteet hehkuvat kallistuvassa iltapäivävalossa.", "Terävä länsituuli ajaa kuolleita lehtiä ohi vaakatasoisina virtoina.", "Märän maan ja lahon haju on oudosti miellyttävä."],
-    coast:     ["Syystyrskyt alkavat; valkoislatvaiset aallot syöksyvät niemekkeitä vasten.", "Tuulessa on todellista purevuutta nyt; purjehtiminen on märkää ja jännittävää.", "Upea auringonlasku muuttaa meren vasaroituun kupariin."],
-    swamp:     ["Suoruohot ovat muuttuneet ruskeiksi ja ruosteisiksi; siemenistä on heiluu tuulessa.", "Vesi on tyyntä, mutta mustalta näyttävää; kesän lämpö on valunut pois.", "Usva nousee suolta aamuhämärässä kuin hidaasti ulos hengitetty hengitys."],
-    desert:    ["Syksy on armollinen aavikolle; kuumuus on katkennut ja matkustaminen on melkein miellyttävää.", "Viileät yöt sallivat kunnollisen levon ensimmäistä kertaa kuukausiin.", "Dyynit heittävät pitkiä, kauniita varjoja matalassa syysauringossa."],
-    underdark: ["Syyssateet imevät kivien läpi; uusia purosia on ilmaantunut edellisestä käynnistä.", "Kylmyys palaa; seurueen hengitys huurteistuu lyhdynvalossa.", "Sienikasvustot ovat räjähtäneet kosteissa käytävissä."],
-    urban:     ["Sadonkorjuujuhlan viirit roikkuvat rakennusten välissä; kadut tuoksuvat maustetulle siderille.", "Langenneet lehdet tukkivat viemärit ja pyörivät jokaisen ovenpielituulen mukana.", "Torikaupat pursuavat kurpitsoja, juurikasviksia ja säilöttyä lihaa."],
-    waterborne:["Syystyrskyt voivat ilmestyä varoittamatta; kapteeni tarkkailee taivasta jatkuvasti.", "Meri on teräksen harmaa ja mahtipontinen; aalloilla on todellinen paino nyt.", "Sade tulee kuuroissa, jokainen kovempi kuin edellinen."],
-    default:   ["Syksyn viileys on nyt kiistaton.", "Lehdet pyörtelevät puista jokaisessa puuskassa.", "Päivät lyhenevät huomattavasti."],
+    arctic:    ["The first serious blizzard of the year sweeps in from the north.", "Ice is reforming on still ponds overnight; mornings crackle underfoot.", "The tundra has gone grey and brown; winter is reclaiming its territory."],
+    forest:    ["The canopy blazes with amber, crimson, and gold; every gust brings a cascade of leaves.", "The forest floor is a soft, damp carpet of fallen leaves.", "Morning mist clings to the low ground until midday."],
+    grassland: ["A chill edge to the wind; the sky is a rich autumn blue.", "The long golden grass bends in waves before each gust.", "Flocks of migrating birds fill the sky in long, honking skeins."],
+    mountain:  ["The first dusting of snow has appeared on the highest peaks.", "Cold, crystal air makes every distant feature razor-sharp.", "Rockfalls are more frequent as the frost works the cliff-faces."],
+    hill:      ["Bracken has gone deep bronze; the hillsides glow in the slanting afternoon light.", "A sharp westerly drives dead leaves past in horizontal streams.", "The smell of wet earth and decay is oddly pleasant."],
+    coast:     ["Autumn storms are beginning; white-capped waves surge against the headlands.", "The wind has a real bite now; sailing is wet and exciting.", "A spectacular sunset turns the sea to hammered copper."],
+    swamp:     ["The marsh grasses have gone to brown and rust; seed-heads nod in the wind.", "The water is still but black-looking; summer's warmth has drained away.", "Mist rises off the bog at dawn like slow exhaled breath."],
+    desert:    ["Autumn is merciful in the desert; the heat has broken and travel is almost pleasant.", "Cool nights allow proper rest for the first time in months.", "The dunes cast long, beautiful shadows in the low autumnal sun."],
+    underdark: ["Autumn rains seep through the rock; new rivulets have appeared since last time.", "The cold is returning; the party's breath mists in their lantern-light.", "Mushroom blooms have exploded in the damp passages."],
+    urban:     ["Harvest festival banners hang between the buildings; the streets smell of spiced cider.", "Fallen leaves clog the gutters and spin in every doorway-draft.", "Market stalls overflow with squash, root vegetables, and preserved meats."],
+    waterborne:["Autumn gales can appear without warning; the captain watches the sky constantly.", "The sea is steel-grey and powerful; the waves have real weight now.", "Rain comes in squalls, each one harder than the last."],
+    default:   ["The chill of autumn is unmistakeable now.", "Leaves spiral from the trees in every gust.", "The days are shortening noticeably."],
   },
 };
 
 function pickWeather(season: string, terrain: string, rng: () => number): string {
   const byTerrain = WEATHER_BY_SEASON_TERRAIN[season];
-  const arr = byTerrain?.[terrain] ?? byTerrain?.["default"] ?? ["Sää on tavanomainen."];
+  const arr = byTerrain?.[terrain] ?? byTerrain?.["default"] ?? ["The weather is unremarkable."];
   return arr[Math.floor(rng() * arr.length)];
 }
 
-// ─── Reittitapahtumat ─────────────────────────────────────────────────────────
+// ─── Trail events (flavor, no mechanical effect) ────────────────────────────
 
 const TRAIL_EVENTS: string[] = [
-  "Hylätty nuotiopaikka, vielä heikosti lämmin, löytyy tien vierestä — kuka tahansa sen jätti, teki sen kiireesti.",
-  "Vanhan harmaan kiven virstanpylväs, jonka kirjoitus on kulunut lähes lukukelvottomaksi, merkitsee vanhemman valtakunnan rajaa.",
-  "Yksinäinen korppi seuraa seuruetta mailin verran, katsellen häiritsevällä älykkyydellä ennen kuin poistuu sanatta.",
-  "Kaurisperhe seisoo jähmettyneinä polun keskellä, sitten katoaa aluskasvillisuuteen kuin heitä ei koskaan olisi ollutkaan.",
-  "Joku on kaivanut tien reunusta äskettäin — jäljet viittaavat suureen metsäkarjuun, ja ne ovat tuoreita.",
-  "Vaunun luuranko, puoliksi romahtanut, istuu ruosteen punaisena ojassa; lasti on kauan sitten kadonnut.",
-  "Valtava hämähäkinverkko, aamukasteesta helmin koristeltu, on viritetty kahden puun välille suoraan polun poikki.",
-  "Ryhmä tuoreesti hakattuja kantoja ympäröi hienon näkymän laakson ylle — joku on ollut täällä aivan äskettäin.",
-  "Karu puinen pyhäkkö jumalalle, jota kukaan seurueesta ei tunnista, seisoo tienristeyksessä, pienin uhrilahjoin koristeltu.",
-  "Suuren variksen ruumis roikkuu pää alaspäin oksalta yhden jalan varassa — kansanparannuskeino pahan onnen varalta.",
-  "Kavionjäljet mudassa kääntyvät äkillisesti tieltä pois eikä palaa; selitystä ei näy.",
-  "Lapsen lelu — veistetty puinen hevonen — istuu polun keskellä kuin se olisi varovaisesti laskettu alas ja sitten unohdettu.",
-  "Kaukainen vasaroimisääni leijuu kukkuloiden yli; jossain tien ulkopuolella on menossa rakennustyö.",
-  "Kauppiasvaunut tulee vastaan; kuljettaja nyökkää hattuaan ja vaihtaa muutaman sanan tien tilasta edessä.",
-  "Vanha kaivo seisoo tien vieressä; vesi on kylmää ja erinomaista, ja joku on jättänyt puhtaan kupin reunalle.",
-  "Haalistunut ilmoitus puuhun kiinnitettynä mainostaa palkkiota 'suuresta täplikäisestä kissasta' — juliste on kuukausia vanha.",
-  "Sienikehä ympäröi kuollutta puuta matemaattisella tarkkuudella; seurue kiertää sen laajasti.",
-  "Puunpolton haju on ilmassa puolen mailin ajan ennen kuin lähde — hiilenhakkaajan mökki — viimein erottuu.",
+  "An abandoned campfire, still faintly warm, sits beside the road — whoever left it did so in a hurry.",
+  "A milestone of old grey stone, its inscription worn to near-illegibility, marks the edge of an older realm.",
+  "A solitary raven follows the party for a mile, watching with unsettling intelligence before departing without a word.",
+  "A family of deer stands frozen in the middle of the path, then vanishes into the undergrowth as though they were never there.",
+  "Something has dug up the road verge recently — tracks suggest a large boar, and recent ones at that.",
+  "The skeleton of a wagon, half-collapsed, sits rust-red in the ditch; the cargo is long gone.",
+  "An enormous spiderweb, beaded with morning dew, has been strung between two trees directly across the path.",
+  "A cluster of freshly cut stumps surrounds a fine view of the valley below — someone was here very recently.",
+  "A crude wooden shrine to a deity none of the party recognises stands at a crossroads, strewn with small offerings.",
+  "The corpse of a large crow hangs upside down from a branch by one foot, a folk-charm against evil omens — or so someone believed.",
+  "Hoofprints in the mud veer suddenly off the road and do not return; no explanation is visible.",
+  "A child's toy — a carved wooden horse — sits in the middle of the path as if set down carefully and then forgotten.",
+  "The distant sound of hammering floats over the hills; a new building going up somewhere off the road.",
+  "A merchant's wagon comes the other way; its driver tips a hat and exchanges a few words about the road ahead.",
+  "An old well stands beside the road; the water is cold and excellent, and someone has left a clean cup on the rim.",
+  "A faded bill posted to a tree advertises a reward for a 'large spotted cat' — the poster is months old.",
+  "A ring of mushrooms surrounds a dead tree with mathematical precision; the party gives it a wide berth.",
+  "The smell of woodsmoke is on the air for half a mile before the source — a charcoal-burner's hut — is spotted.",
 ];
 
-// ─── Henkilöhahmotapahtumat (luokan mukaan) ──────────────────────────────────
+// ─── Character anecdotes (keyed by characterClass) ────────────────────────────
 
 const CLASS_MOMENTS: Record<string, string[]> = {
   fighter: [
-    "ottaa etuvartion, kilpi hieman kohotettuna vaikka tie on rauhallinen — vanhat tavat ovat sitkeässä.",
-    "harjoittelee jalkatyötä lyhyissä lepohetkissä, pistäen kuvitteellisia vastustajia, kunnes joku pyytää lopettamaan.",
-    "vaatii tarkastamaan leirintäalueen kehyksen ennen kuin asettuu iltaa viettämään.",
-    "huomaa tienvarren vartiotornin rakenteellisen heikkouden ja käyttää kymmenen minuuttia selittäen, miten hyökkäisi siihen.",
+    "takes point, shield raised slightly even though the road is peaceful — old habits die hard.",
+    "drills footwork in the brief rest halts, jabbing at imaginary opponents until someone asks them to stop.",
+    "insists on inspecting the campsite perimeter before settling down for the evening.",
+    "notices a structural weakness in a roadside watchtower and spends ten minutes explaining exactly how they would assault it.",
   ],
   ranger: [
-    "lukee suuren eläimen jäljistä pehmeässä maassa, huomioi suunnan, ja tallettaa tiedon kommentoimatta.",
-    "tunnistaa kolme syötävää kasvia tienvarrelta ja täydentää seurueen muonavaroja tahtia hidastamatta.",
-    "kutsuu pysähdyksen, kuuntelee lintujen laulun muuttuvan, sitten olankohautuksen ja heiluttaa seuruetta eteenpäin — pelkkä haukka.",
-    "navigoi tähdillä ja maamerkeillä hiljaisella varmuudella, korjaten ryhmän suunnan kahdesti tekemättä siitä numeroa.",
+    "reads the track of a large animal in the soft earth, notes the direction, and files it away without comment.",
+    "identifies three edible plants along the roadside and supplements the party's rations without breaking stride.",
+    "calls a halt, listens to the birdsong change pitch, then shrugs and waves the party forward — just a hawk.",
+    "navigates by star and landmark with quiet confidence, correcting the group's heading twice without making it a thing.",
   ],
   wizard: [
-    "kirjoittaa käsittämättömiä kaavioita pieneen päiväkirjaan onnistuen samalla olemaan törmäämättä mihinkään.",
-    "tunnistaa tieltä näkyvät rauniot Loitsupestikä edeltävän ajan tukikohdan jäänteiksi ja pitää lyhyen luennon kaikille halukkaille.",
-    "väittelee kartan kanssa kaksikymmentä minuuttia ennen kuin toteaa, että kartta on väärässä.",
-    "käyttää trikkiä nuotion sytyttämiseen ja näyttää sitten lievästi loukkaantuneelta, kun kukaan ei vaikutu.",
+    "jots incomprehensible diagrams in a small journal while somehow managing not to walk into anything.",
+    "identifies the ruins visible from the road as the remains of a pre-Spellplague outpost, then delivers a brief lecture to whoever will listen.",
+    "argues with a map for twenty minutes before concluding that the map is wrong.",
+    "uses a cantrip to light the camp fire and then looks mildly offended when nobody is impressed.",
   ],
   rogue: [
-    "tiedustelee puolen mailin päähän jokaisessa risteyksessä, palaten rentoutuneilla raporteilla, jotka jotenkin aina sisältävät arvokkuuksien sijainnin.",
-    "auki lukon hylättyyn varastoon 'vain nähdäkseen, onko taito yhä tallella' — on.",
-    "katoaa huolestuttavaksi kymmeneksi minuutiksi, sitten ilmestyy aivan eri suunnasta epäilyttävän selityksen puuttumisen kera.",
-    "neuvottelee sillanmaksupisteen tullin alenemisesta, jättäen vartijan sekä keveämmäksi kukkarosta että epäileväisesti epävarmaksi, miten se tapahtui.",
+    "scouts half a mile ahead at each junction, returning with casual reports that somehow always include the location of valuables.",
+    "picks a lock on an abandoned shed 'just to see if the skill is still there' — it is.",
+    "disappears for a worrying ten minutes, then reappears from an entirely different direction with a suspicious lack of explanation.",
+    "negotiates a toll reduction at a bridge checkpoint, leaving the guard both lighter in pocket and vaguely uncertain how it happened.",
   ],
   cleric: [
-    "pysähtyy tienvarren pyhäkön äärellä jättääkseen pienen lahjan, siivoten paikan samalla.",
-    "hoitaa seurueen jäsenen rakkon kantapäässä harjoitetulla tehokkuudella ja lievällä moitteella saappaan hoidosta.",
-    "tarjoaa rukouksen leirillä — lyhyen, vilpittömän, ja juuri tarpeeksi pitkän ollakseen merkityksellinen ilman tympäisyyttä.",
-    "huomaa läheisen maanviljelijän näyttävän huolestuneelta ja viettää neljännestunnin kuunnellen ennen kuin seurueen annetaan jatkaa.",
+    "stops at a roadside shrine to leave a small offering, tidying the place up while they're at it.",
+    "tends to a blister on one party member's heel with practiced efficiency and a mild scold about boot maintenance.",
+    "offers a prayer at camp — brief, sincere, and just long enough to be meaningful without being tedious.",
+    "notices a nearby farmer looking distressed and spends a quarter-hour listening before the party is allowed to move on.",
   ],
   paladin: [
-    "pitää tasaisen, rohkaisevan kommentaarion koko marssin ajan, jonka seurue kokee joko innostavana tai uuvuttavana tunnista riippuen.",
-    "kiillottaa haarniskaansa puolipäivän tauolla, mikä olisi vaikuttavampaa, jos haarniska ei olisi jo tarvinnut sitä kahden tunnin tien kävelemisen jälkeen.",
-    "puuttuu tilanteeseen, kun kauppias joutuu ahdistelluksi tarkastuspisteellä, ja tilanne ratkeaa hämmästyttävällä nopeudella.",
-    "tekee leiriluvuksista merkittävästi taistelevampia kuin tavallisesti — ilmeisesti tällä tienosalla on kunnioitettava historia.",
+    "keeps a steady, encouraging commentary going for the whole march, which the party finds either heartening or exhausting depending on the hour.",
+    "polishes armour at the midday halt, which would be more impressive if the armour didn't need it after two hours of road-walking.",
+    "intervenes when a merchant is being hectored at a checkpoint, and the situation is resolved with remarkable speed.",
+    "makes camp prayers notably more martial than usual — apparently this patch of road has a storied history they feel obliged to honour.",
   ],
   bard: [
-    "sepittää lyhyen säkeen maisemasta, joka on vilpittömästi ihan hyvä, mikä yllättää kaikki mukaanlukien bardin itsensä.",
-    "juttelee tienvarren maanviljelijän kanssa kaksikymmentä minuuttia, irrottaen yllättävän paljon paikallista tietoa.",
-    "asettaa marssirhytmin pirteällä laululla, joka nostaa tahtia huomattavasti seuraavan kahden tunnin ajan.",
-    "kertoo tarinan nuotion ääressä joka alkaa vitsillä, muuttuu odottamatta surulliseksi ja päättyy koko seurueen hiljaiseen mietiskelyyn.",
+    "composes a short verse about the landscape that is genuinely quite good, which surprises everyone including the bard.",
+    "engages a roadside farmer in twenty minutes of conversation, extracting a surprising amount of local intelligence.",
+    "sets a marching rhythm with a lively song that gets the pace up noticeably for the next two hours.",
+    "tells a story around the campfire that begins as a joke, becomes unexpectedly sad, and ends with the whole party quietly reflective.",
   ],
   druid: [
-    "pysähtyy siirtämään kilpikonnan tieltä lähellä olevalle ruohopaikalle ja selittää sitten ekologisen perustelun perusteellisesti.",
-    "tunnistaa metsän mielialan pieneläinten liikkeiden kautta; arvio on 'jännittynyt mutta ei vihamielinen'.",
-    "kutsuu lyhyen tuulenpuuskan puolipäivän tauolla viilentämään seuruetta; se saapuu tuoksuvan kaukaiselta sateelta.",
-    "kommunikoi suuren tammen kanssa tienvarrella useita minuutteja; tammen raportti, ilmeisesti, on tapahtumaköyhä.",
+    "stops to move a tortoise off the road and onto a nearby patch of grass, then explains the ecological justification at length.",
+    "identifies the mood of the woodland through the movements of small animals; the assessment is 'tense but not hostile'.",
+    "calls up a brief breeze at the midday halt to cool the party; it arrives smelling of distant rain.",
+    "communes with a large oak at the roadside for several minutes; the tree's report, evidently, is uneventful.",
   ],
   barbarian: [
-    "vaatii kantaa raskaimpia rinkoja ja tekee sen täysin vaivattomasti, mikä on sekä avulias että hieman ärsyttävää.",
-    "haastaa paikallisen majatalossa kättelykisaan selvittääkseen, onko tie edessä ylitettävissä — ja voittaa, lopullisesti.",
-    "huomaa jotain liikkuvan puurivistössä, mikä osoittautuu peuraksi, mutta lyhyt valppausmomentti on vaikuttava.",
-    "syö valtavasti puolipäivän tauolla, nukkuu tarkalleen kaksitoista minuuttia, ja herää virkistyneenä.",
+    "insists on carrying the heaviest packs and makes it look entirely effortless, which is both helpful and slightly annoying.",
+    "challenges a local at an inn to an arm-wrestling match to settle whether the road ahead is passable — and wins, definitively.",
+    "spots something moving in the treeline that turns out to be a deer, but the brief moment of alertness is impressive.",
+    "eats an enormous amount at the midday halt, sleeps for exactly twelve minutes, and wakes refreshed.",
   ],
   monk: [
-    "meditoi aamunvalossa kaksikymmentä minuuttia, sitten ohittaa kaikki seuraavan kolmen tunnin ajan.",
-    "tasapainottaa kaatuneen hirren yli puroa ylittäessä kantaen kahta rinkoa, koska vaihtoehto näytti epäelegantilta.",
-    "huomaa epätasaiset noppakivet sadan yaardin päässä ilman ilmeistä syytä ja ohjaa seurueen piilossa olevan kaivon vierestä.",
-    "esittää lyhyen filosofisen huomion matkasta, joka on joko syvällinen tai hyvin tylsä kuuntelijan mielialasta riippuen.",
+    "meditates at first light for twenty minutes, then outpaces everyone for the next three hours.",
+    "balances on a fallen log crossing a stream while carrying two packs, just because the alternative looked inelegant.",
+    "notices the uneven cobblestones a hundred yards ahead without apparent reason and steers the party around a concealed drainage grate.",
+    "delivers a brief philosophical observation about the journey that is either profound or very dull, depending on the listener's mood.",
   ],
   sorcerer: [
-    "sytyttää vahingossa pienen taikavaikutuksen elehtiessään ilmaisevasti puheessaan — mikään ei onni syttymään, onneksi.",
-    "on viimeinen valmis joka aamu ja ensimmäinen valittamaan puolipäivän jälkeen, mutta jotenkin pysyy sulostuttavana.",
-    "esittelee trikkiä leveäsilmäiselle lapselle läheisellä maatilalla, sitten on yllättynyt, kuinka paljon se maksoi sosiaalista pääomaa vanhempien kanssa.",
-    "nukahtaa satulaan eikä jotenkin putoa, minkä seurue päättää olla kyseenalaistamatta.",
+    "accidentally sparks a minor magical effect while gesturing expressively in conversation — nothing catches fire, thankfully.",
+    "is the last one ready every morning and the first one complaining by midday, but somehow remains endearing about it.",
+    "demonstrates a cantrip for a wide-eyed child near a farmstead, then is surprised by how much it cost in social capital with the parents.",
+    "falls asleep in the saddle and somehow does not fall off, which the party decides not to question.",
   ],
   warlock: [
-    "mutisee jotain kielellä, jota kukaan muu ei osaa, pimeää puurivistöä kohti, sitten heilauttaa kättä ja sanoo, ettei se ollut mitään.",
-    "istuu erillään leirillä, kirjoittaen tummakantiseen päiväkirjaan kuolevan nuotion valossa, ja kieltäytyy jakamasta sisältöä.",
-    "antaa pitkän selityksen läheisestä historiallisesta julmuudesta sillä yksityiskohtaisella tiedolla, kuin olisi itse ollut siellä — vaikka päivämäärät tekevät sen mahdottomaksi.",
-    "tuijottaa taivasta muutaman minuutin joka yö, kuin odottaen signaalia. Ei tule. Tai ei mitä mainitsisi.",
+    "murmurs something in a language no one else knows at the dark tree-line, then waves a hand and says it was nothing.",
+    "sits apart at camp, writing in a dark-covered journal by the dying firelight, and declines to share the contents.",
+    "gives a lengthy explanation of a nearby historical atrocity with the detailed knowledge of someone who was there — though the dates make that impossible.",
+    "stares at the sky for a few minutes each night, as if waiting for a signal. None comes. Or none that they mention.",
   ],
   default: [
-    "pitää tarkkaavaisen silmän tiellä edessä ja puurivistössä takana, vanha matkustajan tapa.",
-    "tarjoaa muonaa sille, joka näyttää eniten matkavättyneeltä — pieni ele, mutta huomattu.",
-    "tutkii maisemaa kävelyn aikana, vertaillen sitä mielessään opiskelemiinsa karttoihin.",
-    "ottaa vuoron tiedustella seuraavaa mutkaa ennen kuin heilauttaa ryhmää eteenpäin.",
+    "keeps a watchful eye on the road ahead and the tree-line beyond, an old traveller's habit.",
+    "offers to share a provision with whoever looks most road-weary — a small gesture, but noted.",
+    "studies the landscape as they walk, comparing it mentally to maps they've studied.",
+    "takes a turn scouting the next bend before waving the group forward.",
   ],
 };
 
@@ -177,71 +177,71 @@ function pickCharacterMoment(character: Character, rng: () => number): string {
   const key = character.characterClass?.toLowerCase() ?? "default";
   const arr = CLASS_MOMENTS[key] ?? CLASS_MOMENTS["default"];
   const moment = arr[Math.floor(rng() * arr.length)];
-  const name = character.name || "Matkustaja";
+  const name = character.name || "The traveler";
   return `${name} ${moment}`;
 }
 
-// ─── Leiri- ja lepotilanteet ──────────────────────────────────────────────────
+// ─── Camp / rest scenes ────────────────────────────────────────────────────────
 
 const CAMP_OPENINGS: string[] = [
-  "Valon hiipuessa seurue asettaa leirin suojaan",
-  "Ilta löytää ryhmän pystyttämässä leiriä",
-  "Auringon laskiessa ja jalkojen kipuillessa leiri pystytetään",
-  "Ryhmä pysähtyy yöksi",
+  "As the light fails, the party sets camp in the shelter of",
+  "Evening finds the group making camp beneath",
+  "With the sun low and legs aching, camp is pitched beside",
+  "The group halts for the night at",
 ];
 
 const CAMP_LOCATIONS_BY_TERRAIN: Record<string, string[]> = {
-  forest:    ["laajan tammen juuria muistuttavia tukijalkoja", "sammaleen peitämän kuopan, johon tuuli ei ylety", "hopeavalkearingistä"],
-  grassland: ["matalalta kukkulalta, josta on näkymä tielle molempiin suuntiin", "ojasta, joka katkaisee tuulen", "orapihlajapensaista"],
-  mountain:  ["graniittikallion suojapuolelle", "matalaan luolaan, joka tuskin mahtuu koko seurueelle", "leveältä tasanteelta siirtolohkareiden yläpuolella"],
-  hill:      ["kuopan alle kahden kohouman välissä, tieltä piilossa", "tuulen veistämien orapihlajien suojaan", "vanhan paimentolaismuurin viereen"],
-  coast:     ["meripatsaan suojaan", "luolaan vuorovesilinjan yläpuolella", "aukosta dyynissä, jossa tuuli kuuluu muttei tunnu"],
-  swamp:     ["kohoumalle, joka on juuri tarpeeksi leveä kaikille", "vääntyneistä pajuista koostuvan metsikön luo", "litteälle kivelle veden yläpuolella"],
-  arctic:    ["jääkivien renkaaseen", "kilven ja saapasten kaivamaan lumihautaan", "ainoaan tuulensuojaan mailin säteellä"],
-  desert:    ["hiekkakivipatsaan luo, joka pitää päivän lämpöä", "kuivuneen joensuojan luo, joka tarjoaa hieman suojaa yötuulelta", "riippaakasian alle, jossa varjoa optimistille"],
-  underdark: ["leveään syvennökseen pääkäytävästä poissa", "luonnolliseen pilarisaliin, joka vaimentaa syvemmän pimeyden äänet", "kahden tunnelin risteykseen, puolustettavissa molemmista suunnista"],
-  urban:     ["vaeltajien majatalo — kapea vuode ja lämmin ateria ovat kopin arvoisia", "talliin, joka tuoksuu odotettua paremmin", "tienvarren tavernan yhteishuoneeseen"],
-  waterborne:["laivan kannelle öljyvahakankaan alle", "hyttiin kannellen alla vartion ottaessa ruorin", "rungon suojaan yöankkuroinnin aikana"],
-  default:   ["parhaaseen saatavilla olevaan suojaan", "tien sivuun", "tasaiselle maanpalalle"],
+  forest:    ["a broad oak with roots like buttresses", "a mossy hollow where the wind cannot reach", "a ring of silver birches"],
+  grassland: ["a low rise with a view of the road in both directions", "a ditch that cuts the wind", "a cluster of hawthorn bushes"],
+  mountain:  ["the lee of a granite outcrop", "a shallow cave barely big enough for the party", "a wide ledge above the scree"],
+  hill:      ["a dip between two rises, hidden from the road", "a stand of wind-sculpted hawthorns", "an old shepherd's wall"],
+  coast:     ["the shelter of a sea-stack", "a cave above the tide-line", "a break in the dunes where the wind can be heard but not felt"],
+  swamp:     ["a hummock of higher ground barely wide enough for everyone", "a copse of twisted willows", "a flat rock above the water-level"],
+  arctic:    ["a ring of ice boulders", "a snow-trench dug with shield and boot", "the only wind-break for a mile in any direction"],
+  desert:    ["a sandstone outcrop that holds the day's warmth", "a dried riverbed that offers some shelter from the night wind", "a scraggly acacia with enough shade for an optimist"],
+  underdark: ["a wide alcove away from the main passage", "a natural pillar-room that muffles the sounds of the deeper dark", "the junction of two tunnels, defensible from both sides"],
+  urban:     ["a wayfarers' inn — a narrow bed and a warm meal are worth the coin", "a stable that smells better than expected", "the common room of a roadside tavern"],
+  waterborne:["the mid-deck under an oilskin awning", "the cabin below decks while the watch takes the wheel", "the shelter of the hull during the night anchor"],
+  default:   ["the best available cover", "the side of the road", "a flat piece of ground"],
 };
 
 const CAMP_MEAL_LINES: string[] = [
-  "Illallinen on yksinkertainen mutta lämmin — sellainen ateria, joka maistuu paremmalle ansaittuna.",
-  "Joku tuottaa pienen kuivatun makkaran ja kovaksi kypsytetyn juuston, joita kukaan ei tiennyt olevan olemassa tähän hetkeen asti, ja ansaitsee ryhmän ikuisen kiitollisuuden.",
-  "Matkamuona. Taas. Syödään valittamatta mutta myös ilman innostusta.",
-  "Onnellinen hieman aiemmin tapahtunut poimintaretki tarkoittaa, että tämän illan muhennoksessa on todellinen maku.",
-  "Tulipesä ei vedä kunnolla; illallinen on savuista mutta kuumaa, mikä on tärkeintä.",
-  "Viimeinen hyvä leipäpala jaetaan — tästä päivästä eteenpäin on kovaleipää ja kuivattua lihaa.",
+  "Dinner is simple but warm — the kind of meal that tastes better for having earned it.",
+  "Someone produces a small cured sausage and a hard cheese that nobody knew existed until this moment, and earns the undying gratitude of the group.",
+  "Trail rations. Again. Eaten without complaint but also without enthusiasm.",
+  "A lucky bit of foraging earlier in the day means tonight's stew has actual flavour.",
+  "The fire refuses to draw properly; dinner is smoky but hot, which is the important thing.",
+  "The last of a good loaf of bread is shared out — after today, it's hardtack and dried meat.",
 ];
 
 const WATCH_LINES: string[] = [
-  "Vartio kuluu tapahtumattomana; ainoat äänet ovat tuuli, hyönteiset ja kaukaiset eläimet askareineen.",
-  "Kenellä tahansa on kesken yövartio jännittävä hetki, kun pöllö laskeutuu lähelle, sitten kolme hyvin ikävystyttävää tuntia sen jälkeen.",
-  "Yö on hiljainen. Liian hiljainen. Mutta siitä ei tule mitään, ja aamuun mennessä kaikki ovat puoliksi unohtaneet tunteen.",
-  "Tuli palaa matalana puoliyöhön mennessä ja se täytyy ruokkia; vartiovuorossa oleva käyttää tilaisuuden muutamaan lisälämmön minuuttiin.",
-  "Eläin — todennäköisesti kettu, todennäköisesti — kiertää leirin kahdesti kolmannella tunnilla. Vartio huomioi sen ja jatkaa.",
+  "The watch passes uneventfully; the only sounds are wind, insects, and distant animals going about their business.",
+  "Whoever takes the middle watch has an exciting few minutes when an owl lands nearby, then a very boring three hours after that.",
+  "The night is still. Too still. But nothing comes of it, and by morning everyone has half-forgotten the feeling.",
+  "The fire burns low by midnight and must be fed; the person on watch takes the opportunity for a few extra minutes of warmth.",
+  "An animal — probably a fox, probably — circles the camp twice in the third hour. The watch notes it and moves on.",
 ];
 
-// ─── Tahdin värikuvaukset ──────────────────────────────────────────────────────
+// ─── Pace-specific mid-journey lines ──────────────────────────────────────────
 
 const PACE_LINES: Record<string, string[]> = {
   fast: [
-    "Tahti on tuskallinen. Keskustelu kuolee murinaksi ja käsisignaaleiksi aamun kuluessa.",
-    "Tauot ovat julmasti lyhyitä — juuri tarpeeksi tyhjentämään vesileilikin ja siirtämään olkainhihnaa.",
-    "Iltapäivällä kenenkään mielessä on vain seuraava virstanpylväs.",
-    "Jokainen ylämäki maksaa enemmän kuin pitäisi tällä vauhdilla; alamäet tuntuvat lahjoilta.",
+    "The pace is punishing. Conversation dies to grunts and hand-signals by mid-morning.",
+    "Breaks are brutally short — just long enough to drain a water-skin and shift a pack-strap.",
+    "By afternoon, the only thought in anyone's head is the next milestone.",
+    "Every incline costs more than it should at this speed; descents feel like gifts.",
   ],
   normal: [
-    "Matkustuksen rytmi asettuu ensimmäisen tunnin jälkeen — yksi jalka toisen eteen, tasainen ja kestävä.",
-    "Puolipäivän pysähdys on kiireetöntä; leipää, vettä ja tilaisuus tarkistaa kartta.",
-    "Keskustelu virtaa helposti maamerkkien välillä; mailit kuluvat anekdooteissa ja väittelyssä.",
-    "Tahti on tarpeeksi mukava, että maisemaa voi tosiasiassa nauttia.",
+    "The rhythm of travel settles in after the first hour — one foot in front of the other, steady and sustainable.",
+    "The midday halt is an unhurried affair; bread, water, and a chance to check the map.",
+    "Conversation flows easily between landmarks; the miles pass in anecdote and argument.",
+    "The pace is comfortable enough that the landscape can actually be enjoyed.",
   ],
   slow: [
-    "Hidas tahti mahdollistaa kunnollisen havainnoinnin — jokainen jälki, jokainen taivaanranta, jokainen ääni huomataan.",
-    "Seurue tiedustelee jokaisen osion huolellisesti; tie ei yllätä varovaisia silmiä.",
-    "Aikaa on ruoanlaittohetkelle, levolle, keskustelulle, joka vie johonkin.",
-    "Maisema paljastaa enemmän tällä tahdilla kuin pakkomarssin aikana — pienet yksityiskohdat kasautuvat tiedoksi.",
+    "The slow pace allows for proper observation — every track, every skyline, every sound is noted.",
+    "The party scouts each section thoroughly; the road holds no surprises for careful eyes.",
+    "There is time for foraging, for rest, for conversation that goes somewhere.",
+    "The landscape reveals more at this pace than at a forced march — small details accumulate into knowledge.",
   ],
 };
 
@@ -250,20 +250,20 @@ function pickPaceLine(pace: string, rng: () => number): string {
   return arr[Math.floor(rng() * arr.length)];
 }
 
-// ─── Kohtaamiskertomus ─────────────────────────────────────────────────────────
+// ─── Encounter narrative lines ─────────────────────────────────────────────────
 
 function encounterLines(encounter: EncounterResult): string {
   const lines: string[] = [];
   if (encounter.dayRoll.triggered) {
-    lines.push(`Päiväaikainen uhka ilmaantuu: ${encounter.dayRoll.monsterCount} ${encounter.dayRoll.monsterName} tukkii tien eteenpäin. Tilanne vaatii välitöntä huomiota.`);
+    lines.push(`A daytime threat materialises: ${encounter.dayRoll.monsterCount} ${encounter.dayRoll.monsterName} block the way forward. The situation requires immediate attention.`);
   }
   if (encounter.nightRoll.triggered) {
-    lines.push(`Pimeyden suojissa ${encounter.nightRoll.monsterCount} ${encounter.nightRoll.monsterName} lähestyy leiriä. Vartio nostaa hälytyksen.`);
+    lines.push(`Under cover of darkness, ${encounter.nightRoll.monsterCount} ${encounter.nightRoll.monsterName} are drawn to the camp. The watch raises the alarm.`);
   }
   return lines.join("\n\n");
 }
 
-// ─── Päävienti ────────────────────────────────────────────────────────────────
+// ─── Main export ────────────────────────────────────────────────────────────────
 
 export interface NarrativeOptions {
   /** A seedable rng function; if omitted Math.random is used. */
@@ -282,32 +282,32 @@ export function generateNarrative(
 
   const partyList =
     characters.length === 0
-      ? "yksinäinen matkustaja"
+      ? "a lone traveler"
       : characters
-          .map((c) => `${c.name || "Tuntematon"} ${c.species || "kulkija"} ${c.characterClass || ""}`.trim())
+          .map((c) => `${c.name || "Unknown"} the ${c.species || "wanderer"} ${c.characterClass || ""}`.trim())
           .join(", ");
 
-  // Lähdön avaus
+  // Opening: departure
   const TIME_OPENINGS: Record<string, string> = {
-    morning:   "Aamunvalossa, kaste vielä ruohossa,",
-    afternoon: "Korkealla auringolla, aamun kylmyys kauan kadonnut,",
-    evening:   "Varjojen pidetessä iltaa kohti,",
-    night:     "Lyhyen levon jälkeen, tähtikaton alla,",
+    morning:   "At first light, with dew still on the grass,",
+    afternoon: "Under a high sun, with the morning's chill long gone,",
+    evening:   "As the shadows lengthened toward evening,",
+    night:     "After a brief rest, beneath a canopy of stars,",
   };
-  const departure = TIME_OPENINGS[stage.startTimeOfDay] ?? "Matkaan lähtiessä,";
+  const departure = TIME_OPENINGS[stage.startTimeOfDay] ?? "Setting out,";
 
-  // Sää
+  // Weather
   const weather = pickWeather(stage.season, stage.terrain, rng);
 
-  // Tahtihuomio
+  // Pace observation
   const paceObs = pickPaceLine(stage.pace, rng);
 
-  // Reittikohtainen tapahtuma (noin 50 % todennäköisyys)
+  // Trail event (roughly 50% chance)
   const trailEvent = rng() > 0.5
     ? TRAIL_EVENTS[Math.floor(rng() * TRAIL_EVENTS.length)]
     : "";
 
-  // Henkilöhahmon hetki (1–2 hahmoa jos läsnä)
+  // Character moment (1-2 characters if present)
   const charMoments: string[] = [];
   if (characters.length > 0) {
     const c1 = characters[Math.floor(rng() * characters.length)];
@@ -321,26 +321,26 @@ export function generateNarrative(
     }
   }
 
-  // Leirikohtaus
+  // Camp scene
   const campOpening = CAMP_OPENINGS[Math.floor(rng() * CAMP_OPENINGS.length)];
   const campLocArr = CAMP_LOCATIONS_BY_TERRAIN[stage.terrain] ?? CAMP_LOCATIONS_BY_TERRAIN["default"];
   const campLoc = campLocArr[Math.floor(rng() * campLocArr.length)];
   const campMeal = CAMP_MEAL_LINES[Math.floor(rng() * CAMP_MEAL_LINES.length)];
   const watch    = WATCH_LINES[Math.floor(rng() * WATCH_LINES.length)];
 
-  // Kohtaamisosio
+  // Encounter section
   const encSection = encounter ? encounterLines(encounter) : "";
 
-  // Saapumishuomio
+  // Arrival note
   const arrivalNote = options?.endDateFormatted
-    ? `Etappi päättyy ${options.endDateFormatted}.`
+    ? `The stage ends ${options.endDateFormatted}.`
     : "";
 
-  // Koosta
+  // Assemble
   const sections: string[] = [
     `**${stage.startLocation} → ${stage.endLocation}**`,
     "",
-    `${departure} ${partyList} lähtee ${stage.startLocation}:sta kohti ${stage.endLocation}:a — ${stage.distanceMiles} mailia matkaa.`,
+    `${departure} ${partyList} depart from ${stage.startLocation}, bound for ${stage.endLocation} — ${stage.distanceMiles} miles distant.`,
     "",
     weather,
     "",

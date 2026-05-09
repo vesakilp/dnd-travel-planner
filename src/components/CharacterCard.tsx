@@ -46,7 +46,10 @@ export default function CharacterCard({ index, register, control, errors, onRemo
       </button>
 
       {isOpen && (
-        <div className="px-4 pb-4 pt-1 space-y-3">
+        <div
+          className="px-4 pb-4 pt-1 space-y-3"
+          onFocus={() => { userToggledRef.current = true; }}
+        >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label htmlFor={`char-name-${index}`} className="block text-sm text-amber-200 mb-1">Name *</label>

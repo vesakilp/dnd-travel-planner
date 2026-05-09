@@ -52,29 +52,29 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
       <div className="flex flex-wrap items-center gap-2" aria-label="Dale Reckoning date picker">
         {/* Year */}
         <div className="flex items-center gap-1">
-          <label className="text-stone-400 text-xs">Vuosi</label>
+          <label className="text-stone-400 text-xs">Year</label>
           <input
             type="number"
-            aria-label="Vuosi (Päivälasku)"
+            aria-label="Year (Dale Reckoning)"
             value={yearStr}
             min={1}
             onChange={(e) => setYearStr(e.target.value)}
-            onBlur={() => commit(yearStr, doyStr)}
+            onBlur={(e) => commit(e.target.value, doyStr)}
             className="w-24 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
           />
         </div>
 
         {/* Day of year */}
         <div className="flex items-center gap-1">
-          <label className="text-stone-400 text-xs">Päivä</label>
+          <label className="text-stone-400 text-xs">Day</label>
           <input
             type="number"
-            aria-label="Vuoden päivä"
+            aria-label="Day of year"
             value={doyStr}
             min={1}
             max={daysInYear(parseInt(yearStr) || 1491)}
             onChange={(e) => setDoyStr(e.target.value)}
-            onBlur={() => commit(yearStr, doyStr)}
+            onBlur={(e) => commit(yearStr, e.target.value)}
             className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
           />
         </div>
