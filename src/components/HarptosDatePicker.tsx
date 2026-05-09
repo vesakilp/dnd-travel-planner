@@ -1,12 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import {
-  segmentsForYear,
-  dayOfYearToSegmentDay,
-  segmentDayToDayOfYear,
   parseDrString,
   toDrString,
   harptosDateToString,
+  daysInYear,
 } from "@/lib/harptos";
 
 interface Props {
@@ -15,116 +13,79 @@ interface Props {
 }
 
 /**
- * A custom date picker for the Forgotten Realms Harptos (Dale Reckoning) calendar.
+ * Simplified Dale Reckoning date picker.
+ * Two number inputs: year and day-of-year (1–365/366).
+ * On blur the formatted Harptos date is shown below the inputs.
  * Internally uses the "DR:{year}:{dayOfYear}" string format.
  */
 export default function HarptosDatePicker({ value, onChange }: Props) {
-  // Derive initial state from the incoming value
   const parsed = parseDrString(value);
   const initialYear = parsed?.year ?? 1491;
   const initialDoy  = parsed?.dayOfYear ?? 175;
 
-  const [year, setYear] = useState(initialYear);
-  const [segmentIndex, setSegmentIndex] = useState(() => {
-    const { segmentIndex: si } = dayOfYearToSegmentDay(initialYear, initialDoy);
-    return si;
-  });
-  const [dayInSegment, setDayInSegment] = useState(() => {
-    const { dayInSegment: d } = dayOfYearToSegmentDay(initialYear, initialDoy);
-    return d;
-  });
+  const [yearStr, setYearStr] = useState(String(initialYear));
+  const [doyStr,  setDoyStr]  = useState(String(initialDoy));
+  const [displayDate, setDisplayDate] = useState(
+    harptosDateToString(initialYear, initialDoy)
+  );
 
-  // Sync state when the `value` prop changes from outside (e.g. journey advance)
+  // Sync when the prop changes from outside (e.g. journey advance)
   useEffect(() => {
     const p = parseDrString(value);
     if (!p) return;
-    setYear(p.year);
-    const { segmentIndex: si, dayInSegment: d } = dayOfYearToSegmentDay(p.year, p.dayOfYear);
-    setSegmentIndex(si);
-    setDayInSegment(d);
+    setYearStr(String(p.year));
+    setDoyStr(String(p.dayOfYear));
+    setDisplayDate(harptosDateToString(p.year, p.dayOfYear));
   }, [value]);
 
-  const segments = segmentsForYear(year);
-  const currentSegment = segments[segmentIndex] ?? segments[0];
-
-  function emit(y: number, si: number, d: number) {
-    const segs = segmentsForYear(y);
-    const clampedSi = Math.min(si, segs.length - 1);
-    const doy = segmentDayToDayOfYear(y, clampedSi, d);
-    onChange(toDrString(y, doy));
+  function commit(ys: string, ds: string) {
+    const y = parseInt(ys) || 1491;
+    const maxDay = daysInYear(y);
+    const d = Math.max(1, Math.min(maxDay, parseInt(ds) || 1));
+    const display = harptosDateToString(y, d);
+    setDisplayDate(display);
+    onChange(toDrString(y, d));
   }
-
-  function handleYearChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const y = parseInt(e.target.value) || year;
-    setYear(y);
-    emit(y, segmentIndex, dayInSegment);
-  }
-
-  function handleSegmentChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const si = parseInt(e.target.value);
-    setSegmentIndex(si);
-    // Reset day to 1 when switching segments to avoid out-of-range
-    setDayInSegment(1);
-    emit(year, si, 1);
-  }
-
-  function handleDayChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const d = parseInt(e.target.value);
-    setDayInSegment(d);
-    emit(year, segmentIndex, d);
-  }
-
-  const displayDate = harptosDateToString(
-    year,
-    segmentDayToDayOfYear(year, segmentIndex, dayInSegment)
-  );
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Dale Reckoning date picker">
-      {/* Year */}
-      <input
-        type="number"
-        aria-label="Year (Dale Reckoning)"
-        value={year}
-        onChange={handleYearChange}
-        className="w-24 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
-        min={1}
-      />
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-center gap-2" aria-label="Dale Reckoning date picker">
+        {/* Year */}
+        <div className="flex items-center gap-1">
+          <label className="text-stone-400 text-xs">Vuosi</label>
+          <input
+            type="number"
+            aria-label="Vuosi (Päivälasku)"
+            value={yearStr}
+            min={1}
+            onChange={(e) => setYearStr(e.target.value)}
+            onBlur={() => commit(yearStr, doyStr)}
+            className="w-24 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+          />
+        </div>
 
-      {/* Month / Festival */}
-      <select
-        aria-label="Month or festival"
-        value={segmentIndex}
-        onChange={handleSegmentChange}
-        className="bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
-      >
-        {segments.map((seg, i) => (
-          <option key={seg.name} value={i}>
-            {seg.name}{seg.isFestival ? " ✦" : ""}
-          </option>
-        ))}
-      </select>
+        {/* Day of year */}
+        <div className="flex items-center gap-1">
+          <label className="text-stone-400 text-xs">Päivä</label>
+          <input
+            type="number"
+            aria-label="Vuoden päivä"
+            value={doyStr}
+            min={1}
+            max={daysInYear(parseInt(yearStr) || 1491)}
+            onChange={(e) => setDoyStr(e.target.value)}
+            onBlur={() => commit(yearStr, doyStr)}
+            className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+          />
+        </div>
+      </div>
 
-      {/* Day within month (hidden for festival days) */}
-      {!currentSegment.isFestival && (
-        <select
-          aria-label="Day of month"
-          value={dayInSegment}
-          onChange={handleDayChange}
-          className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
-        >
-          {Array.from({ length: 30 }, (_, i) => i + 1).map((d) => (
-            <option key={d} value={d}>{d}</option>
-          ))}
-        </select>
+      {/* Formatted display shown after blur */}
+      {displayDate && (
+        <p className="text-amber-300 text-sm font-semibold">
+          {displayDate}
+        </p>
       )}
-
-      {/* Formatted display */}
-      <span className="text-amber-300 text-sm font-semibold whitespace-nowrap">
-        {displayDate}
-      </span>
-
-      <span className="text-stone-500 text-xs">DR</span>
     </div>
   );
 }
