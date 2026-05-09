@@ -43,7 +43,12 @@ export default function PlannerForm() {
   } = useForm<PlannerFormData>({
     resolver: zodResolver(PlannerFormSchema),
     defaultValues: {
-      characters: [{ id: crypto.randomUUID(), name: "", species: "", characterClass: "", level: 1 }],
+      characters: [
+        { id: crypto.randomUUID(), name: "Doc Pohjola", species: "orc", characterClass: "druid", level: 3 },
+        { id: crypto.randomUUID(), name: "Ismo Ylhälä", species: "goliath", characterClass: "rogue", level: 3 },
+        { id: crypto.randomUUID(), name: "Kael Rook", species: "human", characterClass: "monk", level: 3 },
+        { id: crypto.randomUUID(), name: "Aurelian Vexiar", species: "thiefling", characterClass: "warlock", level: 3 },
+      ],
       stages: [DEFAULT_STAGE(1)],
       journeyStartDate: DEFAULT_DR_DATE,
     },
