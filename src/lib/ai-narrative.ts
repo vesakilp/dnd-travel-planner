@@ -8,7 +8,7 @@
  * in Node.js 18+ and Next.js server actions.
  */
 
-import { Character, StageInput, EncounterResult } from "./types";
+import { Character, StageInput, EncounterResult, AiDebugLog } from "./types";
 
 interface OpenAiMessage {
   role: "system" | "user" | "assistant";
@@ -18,6 +18,10 @@ interface OpenAiMessage {
 interface OpenAiResponse {
   choices: Array<{ message: { content: string } }>;
 }
+
+const MODEL = "gpt-4o-mini";
+const TEMPERATURE = 0.85;
+const MAX_TOKENS = 700;
 
 const SYSTEM_PROMPT = `Olet Dungeons & Dragons 5. painoksen kampanjoiden mestari-tarinankertoja, joka kertoo tarinoita Unohdettujen Valtakuntien (Faerûn) maailmassa. Kirjoitat atmosfäärisiä, mukaansatempaavia matkakertomuksia dungeon masterille luettavaksi tai muokattavaksi. Kirjoitustyylisi on eläväinen ja maanläheinen — herätteleviä yksityiskohtia säästä, maisemasta, äänistä ja tuoksuista sekä hahmokohtaisia hetkiä, jotka paljastavat persoonallisuuden toiminnan kautta. Pidä kertomus 3–5 kappaleessa. Sisällytä:
 - Vuodenaikaan ja maastoon sopivat sääolosuhteet
@@ -77,20 +81,31 @@ function buildUserPrompt(
 
 /**
  * Attempt to generate a narrative via the OpenAI API.
- * Returns null if OPENAI_API_KEY is not set or the request fails.
+ * Always returns a debug log alongside the (possibly null) narrative.
  */
 export async function generateAiNarrative(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
   endDateFormatted?: string
-): Promise<string | null> {
+): Promise<{ narrative: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    return { narrative: null, debugLog: { apiKeyPresent: false, usedAi: false } };
+  }
+
+  const userPrompt = buildUserPrompt(stage, characters, encounter, endDateFormatted);
+  const baseDebugLog: Omit<AiDebugLog, "usedAi"> = {
+    apiKeyPresent: true,
+    model: MODEL,
+    temperature: TEMPERATURE,
+    maxTokens: MAX_TOKENS,
+    prompt: userPrompt,
+  };
 
   const messages: OpenAiMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
-    { role: "user",   content: buildUserPrompt(stage, characters, encounter, endDateFormatted) },
+    { role: "user",   content: userPrompt },
   ];
 
   try {
@@ -101,22 +116,27 @@ export async function generateAiNarrative(
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: MODEL,
         messages,
-        max_tokens: 700,
-        temperature: 0.85,
+        max_tokens: MAX_TOKENS,
+        temperature: TEMPERATURE,
       }),
       // Abort after 10 s so a slow response doesn't stall the whole generation
       signal: AbortSignal.timeout(10_000),
     });
 
-    if (!response.ok) return null;
+    if (!response.ok) {
+      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
+    }
 
     const data: OpenAiResponse = await response.json();
     const text = data.choices?.[0]?.message?.content?.trim();
-    return text || null;
+    if (!text) {
+      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
+    }
+    return { narrative: text, debugLog: { ...baseDebugLog, usedAi: true } };
   } catch {
     // Network error, timeout, or parse failure — fall back silently
-    return null;
+    return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false } };
   }
 }

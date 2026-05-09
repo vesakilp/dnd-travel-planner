@@ -59,6 +59,21 @@ export interface CharacterRations {
   rations: number;
 }
 
+export interface AiDebugLog {
+  /** Whether the OPENAI_API_KEY was present on the server. */
+  apiKeyPresent: boolean;
+  /** The model used for generation (only set when the API key was present). */
+  model?: string;
+  /** The temperature setting used. */
+  temperature?: number;
+  /** The max_tokens limit used. */
+  maxTokens?: number;
+  /** The user prompt that was sent to the model. */
+  prompt?: string;
+  /** True when the AI response was used; false when the template fallback was used instead. */
+  usedAi: boolean;
+}
+
 export interface StageResult {
   stageNumber: number;
   effectiveMilesPerDay: number;
@@ -70,6 +85,8 @@ export interface StageResult {
   totalRations: number;
   encounter?: EncounterResult;
   narrative?: string;
+  /** Debug information about how (or whether) OpenAI was used to generate the narrative. */
+  aiDebugLog?: AiDebugLog;
   /** Calendar date the stage ends on (formatted string or "Day N" when no start date). */
   endDate?: string;
   /** Human-readable time of day when the stage ends: "Morning", "Afternoon", or "Evening". */

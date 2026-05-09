@@ -92,27 +92,30 @@ export async function generateJourney(
 
   // Generate all narratives in parallel (AI calls or templates)
   const narrativePromises = stageData.map(async (sd) => {
-    if (mode !== "narrative" && mode !== "all") return undefined;
-    const aiResult = await generateAiNarrative(
+    if (mode !== "narrative" && mode !== "all") return { narrative: undefined, aiDebugLog: undefined };
+    const { narrative: aiNarrative, debugLog } = await generateAiNarrative(
       sd.normalizedStage,
       data.characters,
       sd.encounter,
       sd.endDate
     );
-    return aiResult ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
+    const narrative = aiNarrative ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
       rng,
       endDateFormatted: sd.endDate,
     });
+    return { narrative, aiDebugLog: debugLog };
   });
 
-  const narratives = await Promise.allSettled(narrativePromises);
+  const narrativeResults = await Promise.allSettled(narrativePromises);
 
   const stages: StageResult[] = stageData.map((sd, i) => {
-    const narrativeResult = narratives[i];
-    const narrative = narrativeResult.status === "fulfilled" ? narrativeResult.value : undefined;
+    const result = narrativeResults[i];
+    const { narrative, aiDebugLog } = result.status === "fulfilled"
+      ? result.value
+      : { narrative: undefined, aiDebugLog: undefined };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { normalizedStage: _norm, ...rest } = sd;
-    return { ...rest, narrative };
+    return { ...rest, narrative, aiDebugLog };
   });
 
   const grandTotalRations = stages.reduce((sum, s) => sum + s.totalRations, 0);
