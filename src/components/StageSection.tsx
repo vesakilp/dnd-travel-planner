@@ -1,6 +1,6 @@
 "use client";
 import { UseFormRegister, FieldErrors, Control, useWatch } from "react-hook-form";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { PlannerFormData } from "@/lib/schema";
 import { TERRAIN_CONFIG } from "@/lib/terrain";
 import { VEHICLE_OPTIONS, milesPerDay } from "@/lib/vehicle-options";
@@ -23,33 +23,40 @@ export default function StageSection({ stageIndex, register, control, errors, ca
   const showSpeedOverride = vehicle === "land_vehicle" || vehicle === "waterborne";
   const availableVehicleOptions = showSpeedOverride ? VEHICLE_OPTIONS[vehicle] : [];
   const [distanceHint, setDistanceHint] = useState<string | null>(null);
-  const latestRequestRef = useRef(0);
 
   useEffect(() => {
+    let cancelled = false;
     const start = startLocation?.trim() ?? "";
     const end = endLocation?.trim() ?? "";
+
     if (!start || !end) {
-      setDistanceHint(null);
-      return;
+      const clearHintTimer = setTimeout(() => {
+        if (!cancelled) setDistanceHint(null);
+      }, 0);
+      return () => {
+        cancelled = true;
+        clearTimeout(clearHintTimer);
+      };
     }
 
-    const requestId = latestRequestRef.current + 1;
-    latestRequestRef.current = requestId;
-    setDistanceHint("🔎 Searching Forgotten Realms distance...");
-
     const timer = setTimeout(() => {
+      if (cancelled) return;
+      setDistanceHint("🔎 Searching Forgotten Realms distance...");
       void suggestForgottenRealmsDistance(start, end)
         .then((result) => {
-          if (latestRequestRef.current !== requestId) return;
+          if (cancelled) return;
           setDistanceHint(`✨ ${result.message}`);
         })
         .catch(() => {
-          if (latestRequestRef.current !== requestId) return;
+          if (cancelled) return;
           setDistanceHint("ℹ️ AI distance lookup failed. Keep using manual distance.");
         });
     }, 600);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [startLocation, endLocation]);
 
   return (
