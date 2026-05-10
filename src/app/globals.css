@@ -10,7 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
-  --font-title: "IM Fell English SC", "Palatino Linotype", "Book Antiqua", serif;
+  --font-title: var(--font-im-fell-english-sc), "Palatino Linotype", "Book Antiqua", serif;
 }
 
 body {
