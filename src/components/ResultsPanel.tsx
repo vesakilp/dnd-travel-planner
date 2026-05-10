@@ -103,10 +103,15 @@ export default function ResultsPanel({ result }: Props) {
             </div>
           )}
 
-          {stage.narrative && (
+          {(stage.narrative || stage.narrativeFi) && (
             <div className="bg-amber-50/80 rounded p-4">
               <h4 className="text-sm font-bold text-red-900 mb-2 font-title">📖 Narrative</h4>
-              <div className="text-amber-950 text-sm whitespace-pre-wrap">{stage.narrative}</div>
+              {stage.narrative && (
+                <div className="text-amber-950 text-sm whitespace-pre-wrap">{stage.narrative}</div>
+              )}
+              {stage.narrativeFi && (
+                <div className="text-amber-950 text-sm whitespace-pre-wrap mt-3 pt-3 border-t border-amber-200">{stage.narrativeFi}</div>
+              )}
             </div>
           )}
 

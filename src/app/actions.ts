@@ -239,30 +239,32 @@ export async function generateJourney(
 
   // Generate all narratives in parallel (AI calls or templates)
   const narrativePromises = stageData.map(async (sd) => {
-    if (mode !== "narrative" && mode !== "all") return { narrative: undefined, aiDebugLog: undefined };
-    const { narrative: aiNarrative, debugLog } = await generateAiNarrative(
+    if (mode !== "narrative" && mode !== "all") return { narrative: undefined, narrativeFi: undefined, aiDebugLog: undefined };
+    const { narrative: aiNarrativeEn, narrativeFi: aiNarrativeFi, debugLog } = await generateAiNarrative(
       sd.normalizedStage,
       data.characters,
       sd.encounter,
       sd.endDate
     );
-    const narrative = aiNarrative ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
+    const narrative = aiNarrativeEn ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
       rng,
       endDateFormatted: sd.endDate,
     });
-    return { narrative, aiDebugLog: debugLog };
+    // Finnish narrative is only available from AI; no template fallback
+    const narrativeFi = aiNarrativeFi ?? undefined;
+    return { narrative, narrativeFi, aiDebugLog: debugLog };
   });
 
   const narrativeResults = await Promise.allSettled(narrativePromises);
 
   const stages: StageResult[] = stageData.map((sd, i) => {
     const result = narrativeResults[i];
-    const { narrative, aiDebugLog } = result.status === "fulfilled"
+    const { narrative, narrativeFi, aiDebugLog } = result.status === "fulfilled"
       ? result.value
-      : { narrative: undefined, aiDebugLog: undefined };
+      : { narrative: undefined, narrativeFi: undefined, aiDebugLog: undefined };
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { normalizedStage: _norm, ...rest } = sd;
-    return { ...rest, narrative, aiDebugLog };
+    return { ...rest, narrative, narrativeFi, aiDebugLog };
   });
 
   const grandTotalRations = stages.reduce((sum, s) => sum + s.totalRations, 0);

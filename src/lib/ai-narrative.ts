@@ -23,7 +23,19 @@ const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.85;
 const MAX_TOKENS = 250;
 
-const SYSTEM_PROMPT = `Olet D&D 5e -kampanjan dungeon master, joka kertoo matkasta suoraan hahmoille. Kirjoitat lyhyitä mutta eläviä matkakuvauksia toisessa persoonassa (te), kuin puhuisit suoraan seurueelle. Käytä aistimuksia, tunnelmaa ja konkreettisia yksityiskohtia, mutta pysy selkeänä ja helposti luettavana.
+const SYSTEM_PROMPT_EN = `You are a D&D 5e campaign dungeon master narrating a journey directly to the characters. Write short but vivid travel descriptions in second person (you/your party), as if speaking directly to the group. Use sensory details, atmosphere, and concrete imagery while remaining clear and easy to read.
+
+Include in the narrative:
+- All stage events in order: rests, meals, camping, and other routines
+- Occasionally 1–2 details where a specific party member notices or does something
+- A description of the encounter, if one occurred
+- If the user provided DM notes, weave them in as-is or slightly condensed
+
+Word limit: max 100 words. Each encounter adds 25 words to the limit.
+
+Do not use markdown headings. Do not add DM hints or questions at the end. Write in English.`;
+
+const SYSTEM_PROMPT_FI = `Olet D&D 5e -kampanjan dungeon master, joka kertoo matkasta suoraan hahmoille. Kirjoitat lyhyitä mutta eläviä matkakuvauksia toisessa persoonassa (te), kuin puhuisit suoraan seurueelle. Käytä aistimuksia, tunnelmaa ja konkreettisia yksityiskohtia, mutta pysy selkeänä ja helposti luettavana.
 
 Sisällytä kertomukseen:
 - Kaikki vaiheen tapahtumat järjestyksessä: tauot, ateriat, leiriytyminen ja muut rutiinit
@@ -85,18 +97,19 @@ function buildUserPrompt(
 
 /**
  * Attempt to generate a narrative via the OpenAI API.
- * Always returns a debug log alongside the (possibly null) narrative.
+ * Always returns a debug log alongside the (possibly null) narratives.
  */
 export async function generateAiNarrative(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
   endDateFormatted?: string
-): Promise<{ narrative: string | null; debugLog: AiDebugLog }> {
+): Promise<{ narrative: string | null; narrativeFi: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return {
       narrative: null,
+      narrativeFi: null,
       debugLog: {
         apiKeyPresent: false,
         usedAi: false,
@@ -114,12 +127,12 @@ export async function generateAiNarrative(
     prompt: userPrompt,
   };
 
-  const messages: OpenAiMessage[] = [
-    { role: "system", content: SYSTEM_PROMPT },
-    { role: "user",   content: userPrompt },
-  ];
+  async function callOpenAi(systemPrompt: string): Promise<{ text: string | null; failureReason?: string }> {
+    const messages: OpenAiMessage[] = [
+      { role: "system", content: systemPrompt },
+      { role: "user",   content: userPrompt },
+    ];
 
-  try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -132,42 +145,54 @@ export async function generateAiNarrative(
         max_tokens: MAX_TOKENS,
         temperature: TEMPERATURE,
       }),
-      // Abort after 60 s so a slow response doesn't stall the whole generation
       signal: AbortSignal.timeout(60_000),
     });
 
     if (!response.ok) {
       let errorBody = "";
-      try {
-        errorBody = await response.text();
-      } catch {
-        // ignore — can't read body
-      }
+      try { errorBody = await response.text(); } catch { /* ignore */ }
       const reason = errorBody
         ? `HTTP ${response.status} ${response.statusText}: ${errorBody}`
         : `HTTP ${response.status} ${response.statusText}`;
-      return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason: reason } };
+      return { text: null, failureReason: reason };
     }
 
     const data: OpenAiResponse = await response.json();
-    const text = data.choices?.[0]?.message?.content?.trim();
-    if (!text) {
-      return {
-        narrative: null,
-        debugLog: {
-          ...baseDebugLog,
-          usedAi: false,
-          failureReason: "OpenAI returned a successful response but the content was empty",
-        },
-      };
-    }
-    return { narrative: text, debugLog: { ...baseDebugLog, usedAi: true } };
+    const text = data.choices?.[0]?.message?.content?.trim() || null;
+    if (!text) return { text: null, failureReason: "OpenAI returned empty content" };
+    return { text };
+  }
+
+  try {
+    const [enResult, fiResult] = await Promise.all([
+      callOpenAi(SYSTEM_PROMPT_EN),
+      callOpenAi(SYSTEM_PROMPT_FI),
+    ]);
+
+    const usedAi = !!(enResult.text || fiResult.text);
+    const failureParts: string[] = [];
+    if (!enResult.text && enResult.failureReason) failureParts.push(`EN: ${enResult.failureReason}`);
+    if (!fiResult.text && fiResult.failureReason) failureParts.push(`FI: ${fiResult.failureReason}`);
+
+    return {
+      narrative: enResult.text,
+      narrativeFi: fiResult.text,
+      debugLog: {
+        ...baseDebugLog,
+        usedAi,
+        ...(failureParts.length > 0 && !usedAi
+          ? { failureReason: failureParts.join("; ") }
+          : failureParts.length > 0
+            ? { failureReason: `Partial failure — ${failureParts.join("; ")}` }
+            : {}),
+      },
+    };
   } catch (err) {
     const isTimeout =
       err instanceof Error && (err.name === "TimeoutError" || err.name === "AbortError");
     const failureReason = isTimeout
       ? "Request timed out after 60 seconds"
       : `Network or parse error: ${err instanceof Error ? err.message : String(err)}`;
-    return { narrative: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason } };
+    return { narrative: null, narrativeFi: null, debugLog: { ...baseDebugLog, usedAi: false, failureReason } };
   }
 }
