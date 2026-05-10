@@ -189,11 +189,6 @@ export async function generateJourney(
     const characterRations = calculateRations(data.characters, daysRequired);
     const totalRations = totalRationsForStage(characterRations);
 
-    let encounter: import("@/lib/types").EncounterResult | undefined;
-    if (mode === "challenges" || mode === "all") {
-      encounter = generateEncounters(rng);
-    }
-
     const travelHoursNeeded = daysRequired * 8;
     const departure = normalizeDeparture(currentDayIndex, currentSlotHour);
     const startDayNumber = departure.dayIndex + 1;
@@ -210,6 +205,12 @@ export async function generateJourney(
     const endDate = formatArrivalDate(data.journeyStartDate, arrival.dayIndex);
     const endTimeLabel = slotHourToLabel(arrival.slotHour);
     lastEndDateRaw = rawHarptosDate(data.journeyStartDate, arrival.dayIndex);
+
+    let encounter: import("@/lib/types").EncounterResult | undefined;
+    if (mode === "challenges" || mode === "all") {
+      const stageDayCount = Math.max(1, endDayNumber - startDayNumber + 1);
+      encounter = generateEncounters(stageDayCount, rng);
+    }
 
     const nextStage = data.stages[index + 1];
     if (nextStage) {
@@ -244,11 +245,15 @@ export async function generateJourney(
       sd.normalizedStage,
       data.characters,
       sd.encounter,
-      sd.endDate
+      sd.endDate,
+      sd.startDayNumber,
+      sd.endDayNumber
     );
     const narrative = aiNarrativeEn ?? generateNarrative(sd.normalizedStage, data.characters, sd.encounter, {
       rng,
       endDateFormatted: sd.endDate,
+      startDayNumber: sd.startDayNumber,
+      endDayNumber: sd.endDayNumber,
     });
     // Finnish narrative is only available from AI; no template fallback
     const narrativeFi = aiNarrativeFi ?? undefined;

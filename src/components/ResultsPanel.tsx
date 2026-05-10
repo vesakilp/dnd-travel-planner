@@ -98,8 +98,18 @@ export default function ResultsPanel({ result }: Props) {
           {stage.encounter && (
             <div className="bg-red-100 border border-red-400 rounded p-4 space-y-2">
               <h4 className="text-sm font-bold text-red-900 font-title">⚔️ Wilderness Encounters</h4>
-              <EncounterRollDisplay label="Day Encounter Check" roll={stage.encounter.dayRoll} />
-              <EncounterRollDisplay label="Night Encounter Check" roll={stage.encounter.nightRoll} />
+              {(stage.encounter.dailyRolls?.length
+                ? stage.encounter.dailyRolls
+                : [{ dayNumber: 1, dayRoll: stage.encounter.dayRoll, nightRoll: stage.encounter.nightRoll }]
+              ).map((dayEncounter, idx) => (
+                <div key={`${stage.stageNumber}-enc-${idx}`} className="pt-1">
+                  <p className="text-xs font-semibold text-red-900 mb-1">
+                    Day {stage.startDayNumber + idx}
+                  </p>
+                  <EncounterRollDisplay label="Day Encounter Check" roll={dayEncounter.dayRoll} />
+                  <EncounterRollDisplay label="Night Encounter Check" roll={dayEncounter.nightRoll} />
+                </div>
+              ))}
             </div>
           )}
 

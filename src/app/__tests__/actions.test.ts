@@ -80,6 +80,49 @@ describe("generateJourney", () => {
     expect(result.stages[1].startDayNumber).toBe(3);
     expect(result.stages[1].startTimeLabel).toBe("Morning");
   });
+
+  it("generates encounter checks for each day spanned by a multi-day stage", async () => {
+    const result = await generateJourney(
+      {
+        characters: [baseCharacter],
+        stages: [createStage(1, 60)],
+      },
+      "challenges",
+      123
+    );
+
+    const stage = result.stages[0];
+    expect(stage.startDayNumber).toBe(1);
+    expect(stage.endDayNumber).toBe(3);
+    expect(stage.encounter?.dailyRolls).toHaveLength(3);
+  });
+
+  it("includes day-by-day narrative entries for multi-day stages", async () => {
+    const originalApiKey = process.env.OPENAI_API_KEY;
+    delete process.env.OPENAI_API_KEY;
+
+    try {
+      const result = await generateJourney(
+        {
+          characters: [baseCharacter],
+          stages: [createStage(1, 60)],
+        },
+        "all",
+        123
+      );
+
+      const narrative = result.stages[0].narrative ?? "";
+      expect(narrative).toContain("Day 1:");
+      expect(narrative).toContain("Day 2:");
+      expect(narrative).toContain("Day 3:");
+    } finally {
+      if (originalApiKey === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = originalApiKey;
+      }
+    }
+  });
 });
 
 describe("suggestForgottenRealmsDistance", () => {

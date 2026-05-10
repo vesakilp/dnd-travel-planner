@@ -31,6 +31,8 @@ Include in the narrative:
 - A description of the encounter, if one occurred
 - If the user provided DM notes, weave them in as-is or slightly condensed
 
+Cover each travel day in sequence.
+
 Word limit: max 100 words. Each encounter adds 25 words to the limit.
 
 Do not use markdown headings. Do not add DM hints or questions at the end. Write in English.`;
@@ -51,7 +53,9 @@ function buildUserPrompt(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
-  endDateFormatted?: string
+  endDateFormatted?: string,
+  startDayNumber?: number,
+  endDayNumber?: number
 ): string {
   const partyDesc = characters.length === 0
     ? "a lone traveler"
@@ -59,13 +63,21 @@ function buildUserPrompt(
         `${c.name || "Unknown"} (${c.species || "unknown species"} ${c.characterClass || "adventurer"}, level ${c.level})`
       ).join(", ");
 
-  const encounterDesc: string[] = [];
-  if (encounter?.dayRoll.triggered) {
-    encounterDesc.push(`Day encounter: ${encounter.dayRoll.monsterCount} ${encounter.dayRoll.monsterName} (d20=${encounter.dayRoll.roll})`);
-  }
-  if (encounter?.nightRoll.triggered) {
-    encounterDesc.push(`Night encounter: ${encounter.nightRoll.monsterCount} ${encounter.nightRoll.monsterName} (d20=${encounter.nightRoll.roll})`);
-  }
+  const encounterDays = encounter?.dailyRolls?.length
+    ? encounter.dailyRolls
+    : encounter
+      ? [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }]
+      : [];
+
+  const encounterDesc: string[] = encounterDays.map((day) => {
+    const dayLine = day.dayRoll.triggered
+      ? `${day.dayRoll.monsterCount} ${day.dayRoll.monsterName} (d20=${day.dayRoll.roll})`
+      : `none (d20=${day.dayRoll.roll})`;
+    const nightLine = day.nightRoll.triggered
+      ? `${day.nightRoll.monsterCount} ${day.nightRoll.monsterName} (d20=${day.nightRoll.roll})`
+      : `none (d20=${day.nightRoll.roll})`;
+    return `Day ${day.dayNumber} encounters: day=${dayLine}; night=${nightLine}`;
+  });
 
   const lines = [
     `Stage: ${stage.startLocation} → ${stage.endLocation}`,
@@ -77,6 +89,10 @@ function buildUserPrompt(
     `Vehicle: ${stage.vehicle}`,
     `Party: ${partyDesc}`,
   ];
+
+  if (startDayNumber !== undefined && endDayNumber !== undefined) {
+    lines.push(`Journey days for this stage: Day ${startDayNumber} to Day ${endDayNumber}`);
+  }
 
   if (encounterDesc.length > 0) {
     lines.push(`Encounters: ${encounterDesc.join("; ")}`);
@@ -103,7 +119,9 @@ export async function generateAiNarrative(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
-  endDateFormatted?: string
+  endDateFormatted?: string,
+  startDayNumber?: number,
+  endDayNumber?: number
 ): Promise<{ narrative: string | null; narrativeFi: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -118,7 +136,14 @@ export async function generateAiNarrative(
     };
   }
 
-  const userPrompt = buildUserPrompt(stage, characters, encounter, endDateFormatted);
+  const userPrompt = buildUserPrompt(
+    stage,
+    characters,
+    encounter,
+    endDateFormatted,
+    startDayNumber,
+    endDayNumber
+  );
   const baseDebugLog: Omit<AiDebugLog, "usedAi" | "failureReason"> = {
     apiKeyPresent: true,
     model: MODEL,

@@ -254,11 +254,43 @@ function pickPaceLine(pace: string, rng: () => number): string {
 
 function encounterLines(encounter: EncounterResult): string {
   const lines: string[] = [];
-  if (encounter.dayRoll.triggered) {
-    lines.push(`A daytime threat materialises: ${encounter.dayRoll.monsterCount} ${encounter.dayRoll.monsterName} block the way forward. The situation requires immediate attention.`);
+  const days = encounter.dailyRolls?.length
+    ? encounter.dailyRolls
+    : [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }];
+
+  for (const day of days) {
+    if (day.dayRoll.triggered) {
+      lines.push(
+        `Day ${day.dayNumber}: a daytime threat materialises — ${day.dayRoll.monsterCount} ${day.dayRoll.monsterName} block the way forward.`
+      );
+    }
+    if (day.nightRoll.triggered) {
+      lines.push(
+        `Night ${day.dayNumber}: under cover of darkness, ${day.nightRoll.monsterCount} ${day.nightRoll.monsterName} are drawn to camp and the watch raises the alarm.`
+      );
+    }
   }
-  if (encounter.nightRoll.triggered) {
-    lines.push(`Under cover of darkness, ${encounter.nightRoll.monsterCount} ${encounter.nightRoll.monsterName} are drawn to the camp. The watch raises the alarm.`);
+  return lines.join("\n\n");
+}
+
+function journeyDayLines(
+  startDayNumber: number,
+  endDayNumber: number,
+  stage: StageInput,
+  characters: Character[],
+  rng: () => number
+): string {
+  const lines: string[] = [];
+  for (let day = startDayNumber; day <= endDayNumber; day++) {
+    const parts: string[] = [`Day ${day}: ${pickPaceLine(stage.pace, rng)}`];
+    if (rng() > 0.5) {
+      parts.push(TRAIL_EVENTS[Math.floor(rng() * TRAIL_EVENTS.length)]);
+    }
+    if (characters.length > 0 && rng() > 0.4) {
+      const c = characters[Math.floor(rng() * characters.length)];
+      parts.push(pickCharacterMoment(c, rng));
+    }
+    lines.push(parts.join(" "));
   }
   return lines.join("\n\n");
 }
@@ -270,6 +302,10 @@ export interface NarrativeOptions {
   rng?: () => number;
   /** Formatted arrival date string, e.g. "23 Kythorn 1491 DR". */
   endDateFormatted?: string;
+  /** 1-based journey day where this stage starts. */
+  startDayNumber?: number;
+  /** 1-based journey day where this stage ends. */
+  endDayNumber?: number;
 }
 
 export function generateNarrative(
@@ -299,27 +335,10 @@ export function generateNarrative(
   // Weather
   const weather = pickWeather(stage.season, stage.terrain, rng);
 
-  // Pace observation
-  const paceObs = pickPaceLine(stage.pace, rng);
-
-  // Trail event (roughly 50% chance)
-  const trailEvent = rng() > 0.5
-    ? TRAIL_EVENTS[Math.floor(rng() * TRAIL_EVENTS.length)]
-    : "";
-
-  // Character moment (1-2 characters if present)
-  const charMoments: string[] = [];
-  if (characters.length > 0) {
-    const c1 = characters[Math.floor(rng() * characters.length)];
-    charMoments.push(pickCharacterMoment(c1, rng));
-    if (characters.length > 1 && rng() > 0.4) {
-      const otherChars = characters.filter((c) => c.id !== c1.id);
-      if (otherChars.length > 0) {
-        const c2 = otherChars[Math.floor(rng() * otherChars.length)];
-        charMoments.push(pickCharacterMoment(c2, rng));
-      }
-    }
-  }
+  // Day-by-day progression across all travel days in this stage.
+  const startDayNumber = options?.startDayNumber ?? 1;
+  const endDayNumber = Math.max(startDayNumber, options?.endDayNumber ?? startDayNumber);
+  const dayByDay = journeyDayLines(startDayNumber, endDayNumber, stage, characters, rng);
 
   // Camp scene
   const campOpening = CAMP_OPENINGS[Math.floor(rng() * CAMP_OPENINGS.length)];
@@ -344,17 +363,8 @@ export function generateNarrative(
     "",
     weather,
     "",
-    paceObs,
+    dayByDay,
   ];
-
-  if (trailEvent) {
-    sections.push("", trailEvent);
-  }
-
-  if (charMoments.length > 0) {
-    sections.push("");
-    sections.push(...charMoments);
-  }
 
   if (encSection) {
     sections.push("", encSection);
