@@ -1,13 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fef7e6;
-  --foreground: #2c180f;
+  --background: #121316;
+  --foreground: #f2e6c9;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-amber-50: #121316;
+  --color-amber-100: #1b1d22;
+  --color-amber-200: #262932;
+  --color-amber-300: #353944;
+  --color-amber-400: #454b59;
+  --color-amber-600: #8f7f52;
+  --color-amber-700: #ab9558;
+  --color-amber-800: #c9b988;
+  --color-amber-900: #e2d5b3;
+  --color-amber-950: #f2e6c9;
+  --color-red-100: #2c1719;
+  --color-red-400: #9f4a47;
+  --color-red-600: #c23b34;
+  --color-red-700: #d24e46;
+  --color-red-800: #8e2924;
+  --color-red-900: #e05f52;
+  --color-yellow-100: #2d2716;
+  --color-yellow-500: #c79d36;
+  --color-yellow-700: #dfb754;
+  --color-yellow-900: #f1d58a;
+  --color-blue-600: #5f738d;
+  --color-blue-700: #4f637b;
+  --color-green-700: #68ab7f;
   --font-sans: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
