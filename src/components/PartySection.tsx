@@ -19,17 +19,17 @@ export default function PartySection({ register, control, errors }: Props) {
   return (
     <section aria-labelledby="party-heading" className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 id="party-heading" className="text-xl font-bold text-amber-400">⚔️ Party & Characters</h2>
+        <h2 id="party-heading" className="text-xl font-bold text-red-900 font-title">⚔️ Party & Characters</h2>
         <button
           type="button"
           onClick={addCharacter}
-          className="bg-amber-700 hover:bg-amber-600 text-white text-sm px-4 py-2 rounded transition-colors"
+          className="bg-red-800 hover:bg-red-700 text-amber-50 text-sm px-4 py-2 rounded transition-colors"
         >
           + Add Adventurer
         </button>
       </div>
       {errors.characters?.root && (
-        <p className="text-red-400 text-sm">{errors.characters.root.message}</p>
+        <p className="text-red-700 text-sm">{errors.characters.root.message}</p>
       )}
       {fields.map((field, index) => (
         <CharacterCard

@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #121418;
+  --foreground: #e9deca;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-amber-50: #121418;
+  --color-amber-100: #181c22;
+  --color-amber-200: #222830;
+  --color-amber-300: #2e363f;
+  --color-amber-400: #3d4753;
+  --color-amber-500: #505d6a;
+  --color-amber-600: #677483;
+  --color-amber-700: #8a8272;
+  --color-amber-800: #b9ac93;
+  --color-amber-900: #d9cebb;
+  --color-amber-950: #f0e6d4;
+  --color-red-100: #221617;
+  --color-red-400: #5c2928;
+  --color-red-600: #8d352f;
+  --color-red-700: #ab4037;
+  --color-red-800: #c7594a;
+  --color-red-900: #e18472;
+  --color-yellow-100: #231e13;
+  --color-yellow-500: #8e6d2f;
+  --color-yellow-700: #c49a4b;
+  --color-yellow-900: #e7c37c;
+  --color-blue-600: #2d4e70;
+  --color-blue-700: #3f668d;
+  --color-green-700: #4f8f64;
+  --font-sans: "Segoe UI", "Trebuchet MS", Arial, sans-serif;
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+.font-title {
+  font-family: var(--font-im-fell-english-sc), "Palatino Linotype", "Book Antiqua", serif;
+  letter-spacing: 0.02em;
 }

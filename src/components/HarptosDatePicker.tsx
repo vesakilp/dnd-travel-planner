@@ -61,7 +61,7 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
       <div className="flex flex-wrap items-center gap-2" aria-label="Dale Reckoning date picker">
         {/* Year */}
         <div className="flex items-center gap-1">
-          <label className="text-stone-400 text-xs">Year</label>
+          <label className="text-amber-800 text-xs">Year</label>
           <input
             type="number"
             aria-label="Year (Dale Reckoning)"
@@ -69,13 +69,13 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
             min={1}
             onChange={(e) => { setYearStr(e.target.value); latestYearRef.current = e.target.value; }}
             onBlur={() => commit(latestYearRef.current, latestDoyRef.current)}
-            className="w-24 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+            className="w-24 bg-amber-50 border border-amber-300 rounded px-2 py-2 text-amber-950 focus:outline-none focus:border-red-700 text-sm"
           />
         </div>
 
         {/* Day of year */}
         <div className="flex items-center gap-1">
-          <label className="text-stone-400 text-xs">Day</label>
+          <label className="text-amber-800 text-xs">Day</label>
           <input
             type="number"
             aria-label="Day of year"
@@ -84,14 +84,14 @@ export default function HarptosDatePicker({ value, onChange }: Props) {
             max={daysInYear(parseInt(yearStr) || 1491)}
             onChange={(e) => { setDoyStr(e.target.value); latestDoyRef.current = e.target.value; }}
             onBlur={() => commit(latestYearRef.current, latestDoyRef.current)}
-            className="w-20 bg-stone-800 border border-stone-600 rounded px-2 py-2 text-white focus:outline-none focus:border-amber-500 text-sm"
+            className="w-20 bg-amber-50 border border-amber-300 rounded px-2 py-2 text-amber-950 focus:outline-none focus:border-red-700 text-sm"
           />
         </div>
       </div>
 
       {/* Formatted display shown after blur */}
       {displayDate && (
-        <p className="text-amber-300 text-sm font-semibold">
+        <p className="text-red-800 text-sm font-semibold">
           {displayDate}
         </p>
       )}

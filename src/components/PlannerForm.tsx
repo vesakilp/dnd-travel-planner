@@ -147,11 +147,11 @@ export default function PlannerForm() {
         <PartySection register={register} control={control} errors={errors} />
 
         <div className="space-y-6">
-          <h2 className="text-xl font-bold text-amber-400">🧭 Journey Stages</h2>
+          <h2 className="text-xl font-bold text-red-900 font-title">🧭 Journey Stages</h2>
 
           <div className="space-y-1">
-            <label className="block text-sm text-amber-200">
-              📅 Journey Start Date <span className="text-stone-500 text-xs">(Dale Reckoning)</span>
+            <label className="block text-sm text-amber-900">
+              📅 Journey Start Date <span className="text-amber-700 text-xs">(Dale Reckoning)</span>
             </label>
             <HarptosDatePicker
               value={getValues("journeyStartDate") || DEFAULT_DR_DATE}
@@ -176,7 +176,7 @@ export default function PlannerForm() {
             <button
               type="button"
               onClick={addStage}
-              className="bg-amber-700 hover:bg-amber-600 text-white text-sm px-4 py-2 rounded transition-colors"
+              className="bg-red-800 hover:bg-red-700 text-amber-50 text-sm px-4 py-2 rounded transition-colors"
             >
               + Add Stage
             </button>
@@ -187,7 +187,7 @@ export default function PlannerForm() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+            className="bg-red-800 hover:bg-red-700 disabled:opacity-50 text-amber-50 px-5 py-2 rounded-lg font-semibold transition-colors"
           >
             ✨ Generate Journey
           </button>
@@ -196,7 +196,7 @@ export default function PlannerForm() {
               type="button"
               onClick={handleReturnJourney}
               disabled={loading}
-              className="bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+              className="bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-amber-50 px-5 py-2 rounded-lg font-semibold transition-colors"
             >
               🔄 Return Journey
             </button>
@@ -205,14 +205,14 @@ export default function PlannerForm() {
             type="button"
             onClick={handleNewJourney}
             disabled={loading}
-            className="bg-stone-700 hover:bg-stone-600 disabled:opacity-50 text-white px-5 py-2 rounded-lg font-semibold transition-colors"
+            className="bg-amber-700 hover:bg-amber-600 disabled:opacity-50 text-amber-50 px-5 py-2 rounded-lg font-semibold transition-colors"
           >
             🗺️ New Journey
           </button>
         </div>
 
-        {loading && <p className="text-amber-300 animate-pulse">⏳ Generating your journey...</p>}
-        {error && <p className="text-red-400">{error}</p>}
+        {loading && <p className="text-red-800 animate-pulse">⏳ Generating your journey...</p>}
+        {error && <p className="text-red-700">{error}</p>}
       </form>
 
       <ResultsPanel result={result} />
