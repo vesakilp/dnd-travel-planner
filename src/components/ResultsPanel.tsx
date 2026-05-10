@@ -104,7 +104,7 @@ export default function ResultsPanel({ result }: Props) {
               ).map((dayEncounter, idx) => (
                 <div key={`${stage.stageNumber}-enc-${idx}`} className="pt-1">
                   <p className="text-xs font-semibold text-red-900 mb-1">
-                    Day {stage.startDayNumber + idx}
+                    Day {stage.startDayNumber + dayEncounter.dayNumber - 1}
                   </p>
                   <EncounterRollDisplay label="Day Encounter Check" roll={dayEncounter.dayRoll} />
                   <EncounterRollDisplay label="Night Encounter Check" roll={dayEncounter.nightRoll} />

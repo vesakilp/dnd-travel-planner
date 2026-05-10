@@ -63,11 +63,7 @@ function buildUserPrompt(
         `${c.name || "Unknown"} (${c.species || "unknown species"} ${c.characterClass || "adventurer"}, level ${c.level})`
       ).join(", ");
 
-  const encounterDays = encounter?.dailyRolls?.length
-    ? encounter.dailyRolls
-    : encounter
-      ? [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }]
-      : [];
+  const encounterDays = normalizeEncounterDays(encounter);
 
   const encounterDesc: string[] = encounterDays.map((day) => {
     const dayLine = day.dayRoll.triggered
@@ -109,6 +105,12 @@ function buildUserPrompt(
   }
 
   return lines.join("\n");
+}
+
+function normalizeEncounterDays(encounter?: EncounterResult) {
+  if (!encounter) return [];
+  if (encounter.dailyRolls?.length) return encounter.dailyRolls;
+  return [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }];
 }
 
 /**
