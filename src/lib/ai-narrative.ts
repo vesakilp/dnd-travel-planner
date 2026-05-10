@@ -22,7 +22,6 @@ interface OpenAiResponse {
 
 const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.85;
-const MAX_TOKENS = 250;
 
 const SYSTEM_PROMPT_EN = `You are a D&D 5e campaign dungeon master narrating a journey directly to the characters. Write short but vivid travel descriptions in second person (you/your party), as if speaking directly to the group. Use sensory details, atmosphere, and concrete imagery while remaining clear and easy to read.
 
@@ -33,8 +32,7 @@ Include in the narrative:
 - If the user provided DM notes, weave them in as-is or slightly condensed
 
 Cover each travel day in sequence.
-
-Word limit: max 100 words. Each encounter adds 25 words to the limit.
+Length guidance (not a hard limit): for each travel day, aim for roughly the same amount of detail as your previous one-day output (about 100 words), and add about 25 extra words for each encounter that day.
 
 Do not use markdown headings. Do not add DM hints or questions at the end. Write in English.`;
 
@@ -46,7 +44,8 @@ Sisällytä kertomukseen:
 - Kohtaamisen kuvaus, jos sellainen on
 - Jos käyttäjä on antanut DM-muistiinpanoja (DM notes), sisällytä ne kertomukseen sellaisenaan tai lyhennettynä
 
-Sanaraja: enintään 100 sanaa. Jokainen kohtaaminen lisää sanarajan 25 sanalla.
+Kuvaa jokainen matkapäivä järjestyksessä.
+Pituusohje (ei kova raja): pyri noin samaan yksityiskohtatasoon kuin aiemmassa yhden päivän kuvauksessa (noin 100 sanaa/päivä), ja lisää noin 25 sanaa jokaisesta sen päivän kohtaamisesta.
 
 Älä käytä markdown-otsikoita. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
 
@@ -145,7 +144,6 @@ export async function generateAiNarrative(
     apiKeyPresent: true,
     model: MODEL,
     temperature: TEMPERATURE,
-    maxTokens: MAX_TOKENS,
     prompt: userPrompt,
   };
 
@@ -164,7 +162,6 @@ export async function generateAiNarrative(
       body: JSON.stringify({
         model: MODEL,
         messages,
-        max_tokens: MAX_TOKENS,
         temperature: TEMPERATURE,
       }),
       signal: AbortSignal.timeout(60_000),
