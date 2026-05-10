@@ -260,7 +260,7 @@ function encounterLines(encounter: EncounterResult): string {
   for (const day of days) {
     if (day.dayRoll.triggered) {
       lines.push(
-        `Day ${day.dayNumber}: a daytime threat materialises — ${day.dayRoll.monsterCount} ${day.dayRoll.monsterName} block the way forward.`
+        `Day ${day.dayNumber}: a daytime threat materializes — ${day.dayRoll.monsterCount} ${day.dayRoll.monsterName} block the way forward.`
       );
     }
     if (day.nightRoll.triggered) {
@@ -338,7 +338,7 @@ export function generateNarrative(
   const startDayNumber = options?.startDayNumber ?? 1;
   const endDayNumber = options?.endDayNumber ?? startDayNumber;
   if (endDayNumber < startDayNumber) {
-    throw new Error("NarrativeOptions.endDayNumber must be greater than or equal to startDayNumber");
+    throw new Error("Narrative end day must be greater than or equal to start day");
   }
   const dayByDay = journeyDayLines(startDayNumber, endDayNumber, stage, characters, rng);
 
