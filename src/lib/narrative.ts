@@ -1,4 +1,5 @@
 import { Character, StageInput, EncounterResult } from "./types";
+import { normalizeEncounterDays } from "./encounter-days";
 
 // ─── Weather tables ────────────────────────────────────────────────────────────
 
@@ -254,9 +255,7 @@ function pickPaceLine(pace: string, rng: () => number): string {
 
 function encounterLines(encounter: EncounterResult): string {
   const lines: string[] = [];
-  const days = encounter.dailyRolls?.length
-    ? encounter.dailyRolls
-    : [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }];
+  const days = normalizeEncounterDays(encounter);
 
   for (const day of days) {
     if (day.dayRoll.triggered) {
@@ -337,7 +336,10 @@ export function generateNarrative(
 
   // Day-by-day progression across all travel days in this stage.
   const startDayNumber = options?.startDayNumber ?? 1;
-  const endDayNumber = Math.max(startDayNumber, options?.endDayNumber ?? startDayNumber);
+  const endDayNumber = options?.endDayNumber ?? startDayNumber;
+  if (endDayNumber < startDayNumber) {
+    throw new Error("NarrativeOptions.endDayNumber must be greater than or equal to startDayNumber");
+  }
   const dayByDay = journeyDayLines(startDayNumber, endDayNumber, stage, characters, rng);
 
   // Camp scene

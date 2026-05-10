@@ -1,6 +1,7 @@
 "use client";
 import { JourneyResult } from "@/lib/types";
 import { formatDuration } from "@/lib/pace";
+import { normalizeEncounterDays } from "@/lib/encounter-days";
 
 interface Props {
   result: JourneyResult | null;
@@ -98,13 +99,10 @@ export default function ResultsPanel({ result }: Props) {
           {stage.encounter && (
             <div className="bg-red-100 border border-red-400 rounded p-4 space-y-2">
               <h4 className="text-sm font-bold text-red-900 font-title">⚔️ Wilderness Encounters</h4>
-              {(stage.encounter.dailyRolls?.length
-                ? stage.encounter.dailyRolls
-                : [{ dayNumber: 1, dayRoll: stage.encounter.dayRoll, nightRoll: stage.encounter.nightRoll }]
-              ).map((dayEncounter, idx) => (
+              {normalizeEncounterDays(stage.encounter).map((dayEncounter, idx) => (
                 <div key={`${stage.stageNumber}-enc-${idx}`} className="pt-1">
                   <p className="text-xs font-semibold text-red-900 mb-1">
-                    Day {stage.startDayNumber + dayEncounter.dayNumber - 1}
+                    Day {(stage.startDayNumber ?? 1) + dayEncounter.dayNumber - 1}
                   </p>
                   <EncounterRollDisplay label="Day Encounter Check" roll={dayEncounter.dayRoll} />
                   <EncounterRollDisplay label="Night Encounter Check" roll={dayEncounter.nightRoll} />

@@ -208,7 +208,10 @@ export async function generateJourney(
 
     let encounter: import("@/lib/types").EncounterResult | undefined;
     if (mode === "challenges" || mode === "all") {
-      const stageDayCount = Math.max(1, endDayNumber - startDayNumber + 1);
+      const stageDayCount =
+        endDayNumber >= startDayNumber
+          ? endDayNumber - startDayNumber + 1
+          : 1;
       encounter = generateEncounters(stageDayCount, rng);
     }
 

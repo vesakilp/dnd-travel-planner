@@ -9,6 +9,7 @@
  */
 
 import { Character, StageInput, EncounterResult, AiDebugLog } from "./types";
+import { normalizeEncounterDays } from "./encounter-days";
 
 interface OpenAiMessage {
   role: "system" | "user" | "assistant";
@@ -105,12 +106,6 @@ function buildUserPrompt(
   }
 
   return lines.join("\n");
-}
-
-function normalizeEncounterDays(encounter?: EncounterResult) {
-  if (!encounter) return [];
-  if (encounter.dailyRolls?.length) return encounter.dailyRolls;
-  return [{ dayNumber: 1, dayRoll: encounter.dayRoll, nightRoll: encounter.nightRoll }];
 }
 
 /**
