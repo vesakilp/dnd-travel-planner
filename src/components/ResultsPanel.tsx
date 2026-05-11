@@ -204,7 +204,7 @@ function getEncounterJourneyDay(startDayNumber: number | undefined, dayNumberWit
   return journeyStageStartDay + dayNumberWithinStage - 1;
 }
 
-function buildInterleavedNarratives(narrative?: string, narrativeFi?: string): string[] | null {
+export function buildInterleavedNarratives(narrative?: string, narrativeFi?: string): string[] | null {
   if (!narrative || !narrativeFi) return null;
 
   const enByDay = extractNarrativeByDay(narrative, /^Day\s+(\d+)\s*:/gim);
@@ -224,7 +224,7 @@ function buildInterleavedNarratives(narrative?: string, narrativeFi?: string): s
   return interleaved.length > 0 ? interleaved : null;
 }
 
-function extractNarrativeByDay(text: string, dayMarkerRegex: RegExp): Map<number, string> {
+export function extractNarrativeByDay(text: string, dayMarkerRegex: RegExp): Map<number, string> {
   const map = new Map<number, string>();
   const markers = Array.from(text.matchAll(dayMarkerRegex));
   if (markers.length === 0) return map;
@@ -234,7 +234,7 @@ function extractNarrativeByDay(text: string, dayMarkerRegex: RegExp): Map<number
     const start = current.index ?? 0;
     const end = markers[i + 1]?.index ?? text.length;
     const dayNumber = Number(current[1]);
-    if (!Number.isFinite(dayNumber)) continue;
+    if (Number.isNaN(dayNumber) || dayNumber < 1) continue;
     const block = text.slice(start, end).trim();
     if (block) map.set(dayNumber, block);
   }

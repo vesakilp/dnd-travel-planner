@@ -33,7 +33,7 @@ Include in the narrative:
 - Format each day as its own paragraph starting with "Day N:" (for example "Day 1:")
 
 Cover each travel day in sequence.
-Length guidance (not a hard limit): for each travel day, aim for roughly the same amount of detail as your previous one-day output (about 100 words), and add about 25 extra words for each encounter that day.
+Length guidance (not a hard limit): for each travel day, aim for roughly 100 words of detail, and add about 25 extra words for each encounter that day.
 
 Do not use markdown headings. Do not add DM hints or questions at the end. Write in English.`;
 
@@ -47,7 +47,7 @@ Sisällytä kertomukseen:
 - Muotoile jokainen päivä omaksi kappaleekseen niin, että se alkaa muodolla "Päivä N:" (esimerkiksi "Päivä 1:")
 
 Kuvaa jokainen matkapäivä järjestyksessä.
-Pituusohje (ei kova raja): pyri noin samaan yksityiskohtatasoon kuin aiemmassa yhden päivän kuvauksessa (noin 100 sanaa/päivä), ja lisää noin 25 sanaa jokaisesta sen päivän kohtaamisesta.
+Pituusohje (ei kova raja): pyri noin 100 sanaan per päivä, ja lisää noin 25 sanaa jokaisesta sen päivän kohtaamisesta.
 
 Älä käytä markdown-otsikoita. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
 
