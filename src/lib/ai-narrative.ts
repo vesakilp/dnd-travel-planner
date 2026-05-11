@@ -9,6 +9,7 @@
  */
 
 import { Character, StageInput, EncounterResult, AiDebugLog } from "./types";
+import { normalizeEncounterDays } from "./encounter-days";
 
 interface OpenAiMessage {
   role: "system" | "user" | "assistant";
@@ -21,7 +22,6 @@ interface OpenAiResponse {
 
 const MODEL = "gpt-4o-mini";
 const TEMPERATURE = 0.85;
-const MAX_TOKENS = 250;
 
 const SYSTEM_PROMPT_EN = `You are a D&D 5e campaign dungeon master narrating a journey directly to the characters. Write short but vivid travel descriptions in second person (you/your party), as if speaking directly to the group. Use sensory details, atmosphere, and concrete imagery while remaining clear and easy to read.
 
@@ -30,8 +30,10 @@ Include in the narrative:
 - Occasionally 1–2 details where a specific party member notices or does something
 - A description of the encounter, if one occurred
 - If the user provided DM notes, weave them in as-is or slightly condensed
+- Format each day as its own paragraph starting with "Day N:" (for example "Day 1:")
 
-Word limit: max 100 words. Each encounter adds 25 words to the limit.
+Cover each travel day in sequence.
+Length guidance (not a hard limit): for each travel day, aim for roughly 100 words of detail, and add about 25 extra words for each encounter that day.
 
 Do not use markdown headings. Do not add DM hints or questions at the end. Write in English.`;
 
@@ -42,8 +44,10 @@ Sisällytä kertomukseen:
 - Satunnaisesti 0–2 yksityiskohtaa, joissa jokin seurueen hahmo havaitsee tai tekee jotain
 - Kohtaamisen kuvaus, jos sellainen on
 - Jos käyttäjä on antanut DM-muistiinpanoja (DM notes), sisällytä ne kertomukseen sellaisenaan tai lyhennettynä
+- Muotoile jokainen päivä omaksi kappaleekseen niin, että se alkaa muodolla "Päivä N:" (esimerkiksi "Päivä 1:")
 
-Sanaraja: enintään 100 sanaa. Jokainen kohtaaminen lisää sanarajan 25 sanalla.
+Kuvaa jokainen matkapäivä järjestyksessä.
+Pituusohje (ei kova raja): pyri noin 100 sanaan per päivä, ja lisää noin 25 sanaa jokaisesta sen päivän kohtaamisesta.
 
 Älä käytä markdown-otsikoita. Älä lisää DM-vihjeitä tai kysymyksiä loppuun. Kirjoita suomeksi.`;
 
@@ -51,7 +55,9 @@ function buildUserPrompt(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
-  endDateFormatted?: string
+  endDateFormatted?: string,
+  startDayNumber?: number,
+  endDayNumber?: number
 ): string {
   const partyDesc = characters.length === 0
     ? "a lone traveler"
@@ -59,13 +65,17 @@ function buildUserPrompt(
         `${c.name || "Unknown"} (${c.species || "unknown species"} ${c.characterClass || "adventurer"}, level ${c.level})`
       ).join(", ");
 
-  const encounterDesc: string[] = [];
-  if (encounter?.dayRoll.triggered) {
-    encounterDesc.push(`Day encounter: ${encounter.dayRoll.monsterCount} ${encounter.dayRoll.monsterName} (d20=${encounter.dayRoll.roll})`);
-  }
-  if (encounter?.nightRoll.triggered) {
-    encounterDesc.push(`Night encounter: ${encounter.nightRoll.monsterCount} ${encounter.nightRoll.monsterName} (d20=${encounter.nightRoll.roll})`);
-  }
+  const encounterDays = normalizeEncounterDays(encounter);
+
+  const encounterDesc: string[] = encounterDays.map((day) => {
+    const dayLine = day.dayRoll.triggered
+      ? `${day.dayRoll.monsterCount} ${day.dayRoll.monsterName} (d20=${day.dayRoll.roll})`
+      : `none (d20=${day.dayRoll.roll})`;
+    const nightLine = day.nightRoll.triggered
+      ? `${day.nightRoll.monsterCount} ${day.nightRoll.monsterName} (d20=${day.nightRoll.roll})`
+      : `none (d20=${day.nightRoll.roll})`;
+    return `Day ${day.dayNumber} encounters: day=${dayLine}; night=${nightLine}`;
+  });
 
   const lines = [
     `Stage: ${stage.startLocation} → ${stage.endLocation}`,
@@ -77,6 +87,10 @@ function buildUserPrompt(
     `Vehicle: ${stage.vehicle}`,
     `Party: ${partyDesc}`,
   ];
+
+  if (startDayNumber !== undefined && endDayNumber !== undefined) {
+    lines.push(`Journey days for this stage: Day ${startDayNumber} to Day ${endDayNumber}`);
+  }
 
   if (encounterDesc.length > 0) {
     lines.push(`Encounters: ${encounterDesc.join("; ")}`);
@@ -103,7 +117,9 @@ export async function generateAiNarrative(
   stage: StageInput,
   characters: Character[],
   encounter?: EncounterResult,
-  endDateFormatted?: string
+  endDateFormatted?: string,
+  startDayNumber?: number,
+  endDayNumber?: number
 ): Promise<{ narrative: string | null; narrativeFi: string | null; debugLog: AiDebugLog }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -118,12 +134,18 @@ export async function generateAiNarrative(
     };
   }
 
-  const userPrompt = buildUserPrompt(stage, characters, encounter, endDateFormatted);
+  const userPrompt = buildUserPrompt(
+    stage,
+    characters,
+    encounter,
+    endDateFormatted,
+    startDayNumber,
+    endDayNumber
+  );
   const baseDebugLog: Omit<AiDebugLog, "usedAi" | "failureReason"> = {
     apiKeyPresent: true,
     model: MODEL,
     temperature: TEMPERATURE,
-    maxTokens: MAX_TOKENS,
     prompt: userPrompt,
   };
 
@@ -142,7 +164,6 @@ export async function generateAiNarrative(
       body: JSON.stringify({
         model: MODEL,
         messages,
-        max_tokens: MAX_TOKENS,
         temperature: TEMPERATURE,
       }),
       signal: AbortSignal.timeout(60_000),

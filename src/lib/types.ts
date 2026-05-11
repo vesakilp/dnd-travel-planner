@@ -48,9 +48,19 @@ export interface EncounterRoll {
   tableRoll?: number;
 }
 
-export interface EncounterResult {
+export interface EncounterDayResult {
+  /** 1-based day index within the stage's encounter sequence. */
+  dayNumber: number;
   dayRoll: EncounterRoll;
   nightRoll: EncounterRoll;
+}
+
+export interface EncounterResult {
+  /** Backward-compatible aliases for the first day rolls. */
+  dayRoll: EncounterRoll;
+  nightRoll: EncounterRoll;
+  /** Day + night encounter checks for each day the stage spans. */
+  dailyRolls: EncounterDayResult[];
 }
 
 export interface CharacterRations {

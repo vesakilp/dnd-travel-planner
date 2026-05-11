@@ -1,4 +1,4 @@
-import { EncounterResult, EncounterRoll } from "./types";
+import { EncounterDayResult, EncounterResult, EncounterRoll } from "./types";
 import { rollD, rollDiceExpression } from "./dice";
 
 interface MonsterEntry {
@@ -52,9 +52,17 @@ function resolveEncounterRoll(table: MonsterEntry[], rng?: () => number): Encoun
   };
 }
 
-export function generateEncounters(rng?: () => number): EncounterResult {
-  return {
+export function generateEncounters(dayCount = 1, rng?: () => number): EncounterResult {
+  const normalizedDayCount = Math.max(1, Math.floor(dayCount));
+  const dailyRolls: EncounterDayResult[] = Array.from({ length: normalizedDayCount }, (_, index) => ({
+    dayNumber: index + 1,
     dayRoll: resolveEncounterRoll(DAY_TABLE, rng),
     nightRoll: resolveEncounterRoll(NIGHT_TABLE, rng),
+  }));
+
+  return {
+    dayRoll: dailyRolls[0].dayRoll,
+    nightRoll: dailyRolls[0].nightRoll,
+    dailyRolls,
   };
 }

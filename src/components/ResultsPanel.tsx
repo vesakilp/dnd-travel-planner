@@ -1,6 +1,7 @@
 "use client";
 import { JourneyResult } from "@/lib/types";
 import { formatDuration } from "@/lib/pace";
+import { normalizeEncounterDays } from "@/lib/encounter-days";
 
 interface Props {
   result: JourneyResult | null;
@@ -66,7 +67,9 @@ export default function ResultsPanel({ result }: Props) {
         )}
       </div>
 
-      {result.stages.map((stage) => (
+      {result.stages.map((stage) => {
+        const interleavedNarrativeBlocks = buildInterleavedNarratives(stage.narrative, stage.narrativeFi);
+        return (
         <div key={stage.stageNumber} className="border border-amber-300 rounded-lg p-5 bg-amber-100/70 space-y-4">
           <h3 className="text-lg font-bold text-red-900 font-title">Stage {stage.stageNumber}</h3>
 
@@ -98,19 +101,39 @@ export default function ResultsPanel({ result }: Props) {
           {stage.encounter && (
             <div className="bg-red-100 border border-red-400 rounded p-4 space-y-2">
               <h4 className="text-sm font-bold text-red-900 font-title">⚔️ Wilderness Encounters</h4>
-              <EncounterRollDisplay label="Day Encounter Check" roll={stage.encounter.dayRoll} />
-              <EncounterRollDisplay label="Night Encounter Check" roll={stage.encounter.nightRoll} />
+              {normalizeEncounterDays(stage.encounter).map((dayEncounter, idx) => (
+                <div key={`${stage.stageNumber}-enc-${idx}`} className="pt-1">
+                  <p className="text-xs font-semibold text-red-900 mb-1">
+                    Day {getEncounterJourneyDay(stage.startDayNumber, dayEncounter.dayNumber)}
+                  </p>
+                  <EncounterRollDisplay label="Day Encounter Check" roll={dayEncounter.dayRoll} />
+                  <EncounterRollDisplay label="Night Encounter Check" roll={dayEncounter.nightRoll} />
+                </div>
+              ))}
             </div>
           )}
 
           {(stage.narrative || stage.narrativeFi) && (
             <div className="bg-amber-50/80 rounded p-4">
               <h4 className="text-sm font-bold text-red-900 mb-2 font-title">📖 Narrative</h4>
-              {stage.narrative && (
-                <div className="text-amber-950 text-sm whitespace-pre-wrap">{stage.narrative}</div>
-              )}
-              {stage.narrativeFi && (
-                <div className="text-amber-950 text-sm whitespace-pre-wrap mt-3 pt-3 border-t border-amber-200">{stage.narrativeFi}</div>
+              {interleavedNarrativeBlocks ? (
+                interleavedNarrativeBlocks.map((block, idx) => (
+                  <div
+                    key={`${stage.stageNumber}-narrative-${idx}`}
+                    className={`text-amber-950 text-sm whitespace-pre-wrap ${idx > 0 ? "mt-3 pt-3 border-t border-amber-200" : ""}`}
+                  >
+                    {block}
+                  </div>
+                ))
+              ) : (
+                <>
+                  {stage.narrative && (
+                    <div className="text-amber-950 text-sm whitespace-pre-wrap">{stage.narrative}</div>
+                  )}
+                  {stage.narrativeFi && (
+                    <div className="text-amber-950 text-sm whitespace-pre-wrap mt-3 pt-3 border-t border-amber-200">{stage.narrativeFi}</div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -166,13 +189,57 @@ export default function ResultsPanel({ result }: Props) {
             </details>
           )}
         </div>
-      ))}
+      );
+      })}
     </section>
   );
 }
 
 function formatTimeLabel(timeLabel: string): string {
   return timeLabel.toLowerCase();
+}
+
+function getEncounterJourneyDay(startDayNumber: number | undefined, dayNumberWithinStage: number): number {
+  const journeyStageStartDay = startDayNumber ?? 1;
+  return journeyStageStartDay + dayNumberWithinStage - 1;
+}
+
+export function buildInterleavedNarratives(narrative?: string, narrativeFi?: string): string[] | null {
+  if (!narrative || !narrativeFi) return null;
+
+  const enByDay = extractNarrativeByDay(narrative, /^Day\s+(\d+)\s*:/gim);
+  const fiByDay = extractNarrativeByDay(narrativeFi, /^Päivä\s+(\d+)\s*:/gim);
+  if (enByDay.size === 0 && fiByDay.size === 0) return null;
+
+  const sortedDays = Array.from(new Set([...enByDay.keys(), ...fiByDay.keys()])).sort((a, b) => a - b);
+  const interleaved: string[] = [];
+
+  for (const day of sortedDays) {
+    const en = enByDay.get(day);
+    if (en) interleaved.push(en);
+    const fi = fiByDay.get(day);
+    if (fi) interleaved.push(fi);
+  }
+
+  return interleaved.length > 0 ? interleaved : null;
+}
+
+export function extractNarrativeByDay(text: string, dayMarkerRegex: RegExp): Map<number, string> {
+  const map = new Map<number, string>();
+  const markers = Array.from(text.matchAll(dayMarkerRegex));
+  if (markers.length === 0) return map;
+
+  for (let i = 0; i < markers.length; i++) {
+    const current = markers[i];
+    const start = current.index ?? 0;
+    const end = markers[i + 1]?.index ?? text.length;
+    const dayNumber = Number(current[1]);
+    if (Number.isNaN(dayNumber) || dayNumber < 1) continue;
+    const block = text.slice(start, end).trim();
+    if (block) map.set(dayNumber, block);
+  }
+
+  return map;
 }
 
 function EncounterRollDisplay({ label, roll }: { label: string; roll: import("@/lib/types").EncounterRoll }) {
