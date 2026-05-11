@@ -30,6 +30,7 @@ Include in the narrative:
 - Occasionally 1–2 details where a specific party member notices or does something
 - A description of the encounter, if one occurred
 - If the user provided DM notes, weave them in as-is or slightly condensed
+- Format each day as its own paragraph starting with "Day N:" (for example "Day 1:")
 
 Cover each travel day in sequence.
 Length guidance (not a hard limit): for each travel day, aim for roughly the same amount of detail as your previous one-day output (about 100 words), and add about 25 extra words for each encounter that day.
@@ -43,6 +44,7 @@ Sisällytä kertomukseen:
 - Satunnaisesti 0–2 yksityiskohtaa, joissa jokin seurueen hahmo havaitsee tai tekee jotain
 - Kohtaamisen kuvaus, jos sellainen on
 - Jos käyttäjä on antanut DM-muistiinpanoja (DM notes), sisällytä ne kertomukseen sellaisenaan tai lyhennettynä
+- Muotoile jokainen päivä omaksi kappaleekseen niin, että se alkaa muodolla "Päivä N:" (esimerkiksi "Päivä 1:")
 
 Kuvaa jokainen matkapäivä järjestyksessä.
 Pituusohje (ei kova raja): pyri noin samaan yksityiskohtatasoon kuin aiemmassa yhden päivän kuvauksessa (noin 100 sanaa/päivä), ja lisää noin 25 sanaa jokaisesta sen päivän kohtaamisesta.
